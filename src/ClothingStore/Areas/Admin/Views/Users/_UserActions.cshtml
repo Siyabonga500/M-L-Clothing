@@ -1,0 +1,18 @@
+@model AdminUserViewModel
+<div class="d-inline-flex gap-1">
+    <a asp-action="Edit" asp-route-id="@Model.User.Id" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+    <form asp-action="ToggleLock" asp-route-id="@Model.User.Id" method="post">
+        <button class="btn btn-sm btn-outline-warning" title="@(Model.IsLocked ? "Unlock" : "Lock")">
+            <i class="bi @(Model.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+        </button>
+    </form>
+    <form asp-action="ToggleAdmin" asp-route-id="@Model.User.Id" method="post">
+        <button class="btn btn-sm btn-outline-primary" title="@(Model.IsAdmin ? "Remove admin" : "Make admin")">
+            <i class="bi @(Model.IsAdmin ? "bi-person-dash" : "bi-person-gear")"></i>
+        </button>
+    </form>
+    <form asp-action="Delete" asp-route-id="@Model.User.Id" method="post"
+          onsubmit="return confirm('Delete @Model.User.Email and all their orders?');">
+        <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+    </form>
+</div>

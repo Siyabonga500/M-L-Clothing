@@ -1,0 +1,14 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="h3 mb-3">My profile</h1>
+        <form asp-action="Profile" method="post" class="row g-3">
+            <partial name="_ProfileFields" model="Model" />
+            <div class="col-12"><button type="submit" class="btn btn-dark">Save changes</button></div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

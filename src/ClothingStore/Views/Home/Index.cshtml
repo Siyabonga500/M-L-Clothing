@@ -1,0 +1,56 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Shop";
+}
+
+<div class="hero p-4 p-md-5 mb-4">
+    <h1 class="display-5 fw-bold">New season. New style.</h1>
+    <p class="lead mb-0">Browse our latest clothing collection and check out securely with Stripe.</p>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <input type="search" name="search" value="@Model.Search" class="form-control" placeholder="Search clothes..." />
+    </div>
+    <div class="col-md-4">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+            <option value="">All categories</option>
+            @foreach (var c in Model.Categories)
+            {
+                <option value="@c" selected="@(c == Model.Category)">@c</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-outline-dark" type="submit"><i class="bi bi-search"></i> Search</button>
+    </div>
+</form>
+
+@if (!Model.Products.Any())
+{
+    <p class="text-muted">No products found.</p>
+}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+    @foreach (var p in Model.Products)
+    {
+        <div class="col">
+            <div class="card h-100 product-card">
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">
+                    <img src="@p.ImageUrl" class="card-img-top" alt="@p.Name"
+                         onerror="this.src='https://placehold.co/600x400?text=@Uri.EscapeDataString(p.Name)'" />
+                </a>
+                <div class="card-body d-flex flex-column">
+                    <span class="badge bg-secondary align-self-start mb-2">@p.Category</span>
+                    <h5 class="card-title">
+                        <a class="text-decoration-none text-dark" asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">@p.Name</a>
+                    </h5>
+                    <p class="fs-5 fw-semibold mb-3">@p.Price.ToMoney()</p>
+                    <div class="mt-auto">
+                        <partial name="_AddToCart" model="p" view-data='new ViewDataDictionary(ViewData) { ["Compact"] = true }' />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

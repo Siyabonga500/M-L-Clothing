@@ -1,0 +1,30 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "My orders";
+}
+<h1 class="mb-4">My orders</h1>
+@if (!Model.Any())
+{
+    <p class="text-muted">You haven't placed any orders yet. <a asp-controller="Home" asp-action="Index">Start shopping</a>.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td>#@o.Id</td>
+                    <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                    <td>@o.Items.Sum(i => i.Quantity)</td>
+                    <td>@o.Total.ToMoney()</td>
+                    <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-dark">View</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

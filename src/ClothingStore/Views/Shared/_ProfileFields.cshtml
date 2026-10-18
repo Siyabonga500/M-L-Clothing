@@ -1,0 +1,31 @@
+@model ProfileViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+<div class="col-md-6">
+    <label asp-for="FirstName" class="form-label"></label>
+    <input asp-for="FirstName" class="form-control" />
+    <span asp-validation-for="FirstName" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label asp-for="Surname" class="form-label"></label>
+    <input asp-for="Surname" class="form-control" />
+    <span asp-validation-for="Surname" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label asp-for="Email" class="form-label"></label>
+    <input asp-for="Email" class="form-control" readonly />
+</div>
+<div class="col-md-6">
+    <label asp-for="PhoneNumber" class="form-label"></label>
+    <input asp-for="PhoneNumber" class="form-control" />
+    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label for="Gender" class="form-label">Gender</label>
+    <partial name="_GenderSelect" model="Model.Gender" />
+    <span asp-validation-for="Gender" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label asp-for="DateOfBirth" class="form-label"></label>
+    <input asp-for="DateOfBirth" class="form-control" />
+</div>
+<partial name="_AddressFields" model="Model" />

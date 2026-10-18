@@ -1,0 +1,50 @@
+@model Product
+@{
+    ViewData["Title"] = Model.Id == 0 ? "New product" : "Edit product";
+}
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All products</a>
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+<form asp-action="Save" method="post" class="row g-3">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-8">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Category" class="form-label"></label>
+        <input asp-for="Category" class="form-control" list="categories" />
+        <datalist id="categories"><option>Men</option><option>Women</option><option>Unisex</option><option>Kids</option><option>Shoes</option><option>Accessories</option></datalist>
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" step="0.01" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Stock" class="form-label"></label>
+        <input asp-for="Stock" class="form-control" />
+        <span asp-validation-for="Stock" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Sizes" class="form-label"></label>
+        <input asp-for="Sizes" class="form-control" />
+        <div class="form-text">Comma separated, e.g. S,M,L,XL</div>
+    </div>
+    <div class="col-12">
+        <label asp-for="ImageUrl" class="form-label"></label>
+        <input asp-for="ImageUrl" class="form-control" />
+    </div>
+    <div class="col-12 form-check ms-2">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+    </div>
+    <div class="col-12"><button type="submit" class="btn btn-dark">Save product</button></div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

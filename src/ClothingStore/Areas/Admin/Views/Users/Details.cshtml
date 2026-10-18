@@ -1,0 +1,56 @@
+@model AdminUserViewModel
+@{
+    ViewData["Title"] = Model.User.FullName;
+    var orders = (List<Order>)ViewData["Orders"]!;
+    var u = Model.User;
+}
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All users</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@u.FullName
+        @if (Model.IsAdmin) { <span class="badge bg-warning text-dark fs-6">Admin</span> }
+        @if (Model.IsLocked) { <span class="badge bg-danger fs-6">Locked</span> }
+    </h1>
+    <partial name="_UserActions" model="Model" />
+</div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Email</dt><dd class="col-sm-8">@u.Email</dd>
+                <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">@u.PhoneNumber</dd>
+                <dt class="col-sm-4">Gender</dt><dd class="col-sm-8">@u.Gender</dd>
+                <dt class="col-sm-4">Date of birth</dt><dd class="col-sm-8">@u.DateOfBirth?.ToString("dd MMM yyyy")</dd>
+                <dt class="col-sm-4">Address</dt><dd class="col-sm-8">@u.HomeAddress<br />@u.City @u.Province @u.PostalCode</dd>
+                <dt class="col-sm-4">Joined</dt><dd class="col-sm-8">@u.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</dd>
+            </dl>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <h6>Reset password</h6>
+            <form asp-action="ResetPassword" asp-route-id="@u.Id" method="post" class="input-group">
+                <input type="text" name="newPassword" class="form-control" placeholder="New password" required />
+                <button class="btn btn-outline-danger">Reset</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+<h2 class="h5 mt-4">Orders</h2>
+@if (!orders.Any()) { <p class="text-muted">No orders.</p> }
+else
+{
+    <table class="table table-sm">
+        <thead><tr><th>#</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+        @foreach (var o in orders)
+        {
+            <tr>
+                <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">#@o.Id</a></td>
+                <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                <td>@o.Total.ToMoney()</td>
+                <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,34 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin dashboard";
+}
+<h1 class="h3 mb-4">Dashboard</h1>
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
+        <div class="text-muted">Revenue</div><div class="display-6">@Model.Revenue.ToMoney()</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
+        <div class="text-muted">Orders</div><div class="display-6">@Model.OrderCount</div>
+        <small class="text-muted">@Model.PendingOrders to fulfil</small></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
+        <div class="text-muted">Users</div><div class="display-6">@Model.UserCount</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
+        <div class="text-muted">Products</div><div class="display-6">@Model.ProductCount</div></div></div></div>
+</div>
+<h2 class="h5">Recent orders</h2>
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead><tr><th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+        @foreach (var o in Model.RecentOrders)
+        {
+            <tr>
+                <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">#@o.Id</a></td>
+                <td>@o.User?.FullName <small class="text-muted">@o.User?.Email</small></td>
+                <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                <td>@o.Total.ToMoney()</td>
+                <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

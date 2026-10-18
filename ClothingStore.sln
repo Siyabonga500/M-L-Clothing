@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EBC8361C-1459-451D-BAC9-CBF90932E523}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClothingStore", "src\ClothingStore\ClothingStore.csproj", "{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2ACB016B-D8A7-4074-A4AD-63D77ABAC60B} = {EBC8361C-1459-451D-BAC9-CBF90932E523}
+	EndGlobalSection
+EndGlobal

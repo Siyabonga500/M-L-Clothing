@@ -1,0 +1,21 @@
+@model Order
+@{
+    ViewData["Title"] = "Order confirmed";
+    var paid = Model.Status != OrderStatus.PendingPayment && Model.Status != OrderStatus.Cancelled;
+}
+<div class="text-center py-5">
+    @if (paid)
+    {
+        <i class="bi bi-check-circle-fill text-success display-1"></i>
+        <h1 class="mt-3">Thank you! Payment confirmed.</h1>
+        <p class="lead">Your order <strong>#@Model.Id</strong> for <strong>@Model.Total.ToMoney()</strong> has been placed.</p>
+    }
+    else
+    {
+        <i class="bi bi-hourglass-split text-warning display-1"></i>
+        <h1 class="mt-3">We're confirming your payment</h1>
+        <p class="lead">Order <strong>#@Model.Id</strong> is waiting for Stripe to confirm payment. Refresh this page in a moment.</p>
+    }
+    <a asp-controller="Orders" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-dark">View order</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark">Continue shopping</a>
+</div>

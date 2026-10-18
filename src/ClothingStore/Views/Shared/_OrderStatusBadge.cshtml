@@ -1,0 +1,13 @@
+@model OrderStatus
+@{
+    var css = Model switch
+    {
+        OrderStatus.PendingPayment => "bg-warning text-dark",
+        OrderStatus.Paid => "bg-success",
+        OrderStatus.Processing => "bg-info text-dark",
+        OrderStatus.Shipped => "bg-primary",
+        OrderStatus.Delivered => "bg-dark",
+        _ => "bg-secondary"
+    };
+}
+<span class="badge @css">@Model</span>

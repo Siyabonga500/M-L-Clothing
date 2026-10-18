@@ -1,0 +1,56 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+<h1 class="mb-4">Checkout</h1>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Delivery details</h5>
+                <form asp-action="Index" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="RecipientName" class="form-label"></label>
+                        <input asp-for="RecipientName" class="form-control" />
+                        <span asp-validation-for="RecipientName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ShippingAddress" class="form-label"></label>
+                        <textarea asp-for="ShippingAddress" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-credit-card"></i> Confirm &amp; pay @Model.Cart.Total.ToMoney()
+                    </button>
+                    <p class="small text-muted mt-2 mb-0">You'll be taken to Stripe's secure payment page to complete your order.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Order summary</h5>
+                <ul class="list-group list-group-flush">
+                    @foreach (var i in Model.Cart.Items)
+                    {
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>@i.Quantity × @i.Product!.Name @(string.IsNullOrEmpty(i.Size) ? "" : $"({i.Size})")</span>
+                            <span>@((i.Product.Price * i.Quantity).ToMoney())</span>
+                        </li>
+                    }
+                    <li class="list-group-item d-flex justify-content-between px-0 fw-semibold fs-5">
+                        <span>Total</span><span>@Model.Cart.Total.ToMoney()</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

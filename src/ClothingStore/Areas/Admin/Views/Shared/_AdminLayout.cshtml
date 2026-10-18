@@ -1,0 +1,21 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Active(string c) => c == controller ? "active" : "";
+}
+<div class="row">
+    <aside class="col-md-3 col-lg-2 mb-4">
+        <div class="list-group">
+            <span class="list-group-item bg-dark text-white fw-semibold"><i class="bi bi-gear"></i> Admin panel</span>
+            <a class="list-group-item list-group-item-action @Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="list-group-item list-group-item-action @Active("Users")" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i> Users</a>
+            <a class="list-group-item list-group-item-action @Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="bi bi-tags"></i> Products</a>
+            <a class="list-group-item list-group-item-action @Active("Orders")" asp-area="Admin" asp-controller="Orders" asp-action="Index"><i class="bi bi-receipt"></i> Orders</a>
+            <a class="list-group-item list-group-item-action" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop"></i> View shop</a>
+        </div>
+    </aside>
+    <section class="col-md-9 col-lg-10">
+        @RenderBody()
+    </section>
+</div>
+@section Scripts { @await RenderSectionAsync("Scripts", required: false) }

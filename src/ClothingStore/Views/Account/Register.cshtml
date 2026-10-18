@@ -1,0 +1,72 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-1">Create your account</h1>
+                <p class="text-muted">Already registered? <a asp-action="Login" asp-route-returnUrl="@returnUrl">Log in</a></p>
+                <form asp-action="Register" asp-route-returnUrl="@returnUrl" method="post" class="row g-3">
+                    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label">Name *</label>
+                        <input asp-for="FirstName" class="form-control" autofocus />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Surname" class="form-label">Surname *</label>
+                        <input asp-for="Surname" class="form-control" />
+                        <span asp-validation-for="Surname" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label">Email *</label>
+                        <input asp-for="Email" class="form-control" autocomplete="username" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="Gender" class="form-label">Gender *</label>
+                        <partial name="_GenderSelect" model="Model.Gender" />
+                        <span asp-validation-for="Gender" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" class="form-control" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                    </div>
+
+                    <partial name="_AddressFields" model="Model" />
+
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label">Password *</label>
+                        <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <div class="form-text">At least 6 characters with an uppercase letter, a lowercase letter and a number.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label">Confirm password *</label>
+                        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 form-check ms-2">
+                        <input asp-for="AcceptTerms" class="form-check-input" />
+                        <label asp-for="AcceptTerms" class="form-check-label"></label>
+                        <div><span asp-validation-for="AcceptTerms" class="text-danger"></span></div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-dark btn-lg w-100">Create account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,21 @@
+@model Order
+<div class="table-responsive">
+    <table class="table">
+        <thead><tr><th>Product</th><th>Size</th><th>Price</th><th>Qty</th><th class="text-end">Total</th></tr></thead>
+        <tbody>
+        @foreach (var i in Model.Items)
+        {
+            <tr>
+                <td>@i.ProductName</td>
+                <td>@i.Size</td>
+                <td>@i.UnitPrice.ToMoney()</td>
+                <td>@i.Quantity</td>
+                <td class="text-end">@i.LineTotal.ToMoney()</td>
+            </tr>
+        }
+        </tbody>
+        <tfoot>
+            <tr class="fw-semibold"><td colspan="4" class="text-end">Total</td><td class="text-end">@Model.Total.ToMoney()</td></tr>
+        </tfoot>
+    </table>
+</div>

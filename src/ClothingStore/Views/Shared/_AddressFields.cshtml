@@ -1,0 +1,27 @@
+@* Shared by Register and Profile; both models have the same field names. *@
+@model dynamic
+@{
+    var provinces = new[] { "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", "Limpopo", "Mpumalanga", "North West", "Northern Cape", "Western Cape" };
+    string? province = Model.Province;
+}
+<div class="col-12">
+    <label for="HomeAddress" class="form-label">Home address *</label>
+    <input name="HomeAddress" id="HomeAddress" value="@Model.HomeAddress" class="form-control" placeholder="Street and house number"
+           data-val="true" data-val-required="The Home address field is required." />
+    <span class="text-danger field-validation-valid" data-valmsg-for="HomeAddress" data-valmsg-replace="true"></span>
+</div>
+<div class="col-md-5">
+    <label for="City" class="form-label">City</label>
+    <input name="City" id="City" value="@Model.City" class="form-control" />
+</div>
+<div class="col-md-4">
+    <label for="Province" class="form-label">Province</label>
+    <select name="Province" id="Province" class="form-select">
+        <option value="">-- Select --</option>
+        @foreach (var p in provinces) { <option selected="@(p == province)">@p</option> }
+    </select>
+</div>
+<div class="col-md-3">
+    <label for="PostalCode" class="form-label">Postal code</label>
+    <input name="PostalCode" id="PostalCode" value="@Model.PostalCode" class="form-control" />
+</div>

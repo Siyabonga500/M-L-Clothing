@@ -1,0 +1,8 @@
+@model string
+<select name="Gender" id="Gender" class="form-select" data-val="true" data-val-required="The Gender field is required.">
+    <option value="">-- Select --</option>
+    @foreach (var g in new[] { "Male", "Female", "Other", "Prefer not to say" })
+    {
+        <option value="@g" selected="@(g == Model)">@g</option>
+    }
+</select>

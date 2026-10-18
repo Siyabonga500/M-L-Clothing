@@ -1,0 +1,22 @@
+@model Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+}
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All orders</a>
+<h1 class="mb-3">Order #@Model.Id <partial name="_OrderStatusBadge" model="Model.Status" /></h1>
+<div class="row g-4">
+    <div class="col-md-8"><partial name="_OrderItems" model="Model" /></div>
+    <div class="col-md-4">
+        <div class="card"><div class="card-body">
+            <h6 class="text-muted">Placed</h6>
+            <p>@Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</p>
+            @if (Model.PaidAt.HasValue)
+            {
+                <h6 class="text-muted">Paid</h6>
+                <p>@Model.PaidAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")</p>
+            }
+            <h6 class="text-muted">Deliver to</h6>
+            <p class="mb-0">@Model.RecipientName<br />@Model.ShippingAddress<br />@Model.Phone</p>
+        </div></div>
+    </div>
+</div>
