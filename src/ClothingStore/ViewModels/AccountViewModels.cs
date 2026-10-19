@@ -58,6 +58,33 @@ public class MustBeTrueAttribute : ValidationAttribute
     public override bool IsValid(object? value) => value is true;
 }
 
+public class ForgotPasswordViewModel
+{
+    [Required, EmailAddress, Display(Name = "Email address")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, Display(Name = "Phone number on your account")]
+    public string Phone { get; set; } = string.Empty;
+}
+
+public class ResetPasswordViewModel
+{
+    [Required]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
+    public string Token { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
+
+    [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password), Display(Name = "New password")]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [Required, DataType(DataType.Password), Display(Name = "Confirm new password")]
+    [Compare(nameof(NewPassword), ErrorMessage = "The passwords do not match.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
 public class LoginViewModel
 {
     [Required, Display(Name = "Email / Username")]

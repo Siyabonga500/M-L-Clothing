@@ -312,3 +312,8 @@ html, body { overflow-x: clip; }
 .color-pick label .swatch { width: 18px; height: 18px; }
 .color-pick input:checked + label { border-color: var(--brand); background: var(--tint); font-weight: 600; }
 .color-pick input:focus-visible + label { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* Server error messages shown above a form (they don't move the buttons when fields are re-validated). */
+.validation-summary-errors { background: #fbe4e1; color: var(--sale); border-radius: 10px; padding: .65rem .9rem; margin-bottom: 1rem; }
+.validation-summary-errors ul { list-style: none; margin: 0; padding: 0; }
+.validation-summary-errors li + li { margin-top: .25rem; }
