@@ -1,8 +1,10 @@
 using System.Net;
-using System.Net.Mail;
 using ClothingStore.Data;
 using ClothingStore.Models;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
+using MimeKit;
 
 namespace ClothingStore.Services;
 
@@ -40,23 +42,27 @@ public class EmailService
         {
             try
             {
-                using var message = new MailMessage
-                {
-                    From = new MailAddress(string.IsNullOrEmpty(_settings.FromEmail) ? _settings.Username : _settings.FromEmail, _settings.FromName),
-                    Subject = subject,
-                    Body = htmlBody,
-                    IsBodyHtml = true
-                };
-                message.To.Add(to);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_settings.FromName,
+                    string.IsNullOrEmpty(_settings.FromEmail) ? _settings.Username : _settings.FromEmail));
+                message.To.Add(MailboxAddress.Parse(to));
+                message.Subject = subject;
+                var body = new BodyBuilder { HtmlBody = htmlBody };
                 foreach (var a in attachments)
-                    message.Attachments.Add(new Attachment(new MemoryStream(a.Content), a.FileName, a.ContentType));
+                    body.Attachments.Add(a.FileName, a.Content, ContentType.Parse(a.ContentType));
+                message.Body = body.ToMessageBody();
 
-                using var client = new SmtpClient(_settings.SmtpHost, _settings.SmtpPort)
-                {
-                    EnableSsl = _settings.EnableSsl,
-                    Credentials = new NetworkCredential(_settings.Username, _settings.Password)
-                };
-                await client.SendMailAsync(message);
+                // Port 465 = SSL from the start; 587 (or others) = upgrade to TLS after connecting (STARTTLS).
+                var security = !_settings.EnableSsl ? SecureSocketOptions.None
+                    : _settings.SmtpPort == 465 ? SecureSocketOptions.SslOnConnect
+                    : SecureSocketOptions.StartTls;
+
+                using var client = new SmtpClient { Timeout = 20000 };
+                await client.ConnectAsync(_settings.SmtpHost, _settings.SmtpPort, security);
+                if (!string.IsNullOrEmpty(_settings.Username))
+                    await client.AuthenticateAsync(_settings.Username, _settings.Password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
                 log.Sent = true;
             }
             catch (Exception ex)
@@ -84,7 +90,13 @@ public class EmailService
                   "create an App Password at https://myaccount.google.com/apppasswords and put its 16 letters (no spaces) in Email:Password. (" + text + ")"
                 : "The email server rejected the username or password. (" + text + ")";
         }
-        if (text.Contains("timed out", StringComparison.OrdinalIgnoreCase) || text.Contains("could not be resolved", StringComparison.OrdinalIgnoreCase)
+        if (text.Contains("10060") || text.Contains("10061") || text.Contains("connection attempt failed", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Cannot connect", StringComparison.OrdinalIgnoreCase) || text.Contains("timed out", StringComparison.OrdinalIgnoreCase))
+            return $"Your PC could not connect to {_settings.SmtpHost} on port {_settings.SmtpPort} – something is blocking outgoing email " +
+                   "(antivirus mail shield, firewall, or a work/school network). " +
+                   (_settings.SmtpPort == 587 ? "Try \"SmtpPort\": 465 instead. " : _settings.SmtpPort == 465 ? "Try \"SmtpPort\": 587 instead. " : "") +
+                   "To check, run in PowerShell: Test-NetConnection " + _settings.SmtpHost + " -Port " + _settings.SmtpPort + " (" + text + ")";
+        if (text.Contains("could not be resolved", StringComparison.OrdinalIgnoreCase)
             || text.Contains("actively refused", StringComparison.OrdinalIgnoreCase)
             || text.Contains("not known", StringComparison.OrdinalIgnoreCase) || text.Contains("No such host", StringComparison.OrdinalIgnoreCase))
             return "Could not reach the email server. Check SmtpHost/SmtpPort and your internet or firewall. (" + text + ")";
