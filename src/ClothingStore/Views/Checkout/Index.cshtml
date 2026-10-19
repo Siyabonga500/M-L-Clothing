@@ -90,7 +90,7 @@
                             <img src="@i.Product!.MainImageUrl" class="cart-thumb" style="width:48px;height:56px" alt="" onerror="this.style.visibility='hidden'" />
                             <div class="flex-grow-1 small">
                                 <div class="fw-semibold">@i.Product.Name</div>
-                                <div class="text-muted">Size @i.Size · Qty @i.Quantity</div>
+                                <div class="text-muted">Size @i.Size@(i.Color != null ? $" · {i.Color}" : "") · Qty @i.Quantity</div>
                             </div>
                             <span class="fw-semibold">@((i.Product.Price * i.Quantity).ToMoney())</span>
                         </li>

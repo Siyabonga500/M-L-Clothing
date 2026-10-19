@@ -67,6 +67,10 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   **Sizes**: tick XS–3XL and enter a quantity for each; tick **Other sizes** to add any size by name or number
   (e.g. 32, 9, One Size) with its quantity. The product total is the sum of all sizes, and buying a size
   reduces only that size's stock.
+  **Colours** (optional): add colours with a swatch and a quantity each (quick buttons for common colours). The colour
+  quantities together may not be more than the product's total from the sizes; this is checked on the page and when
+  saving. Customers pick a colour as well as a size; sold-out colours are hidden, the cart checks stock per size **and**
+  per colour, and buying reduces both.
 - **Users**: search, edit, lock, make admin, reset password, delete.
 - **Emails sent**: every email the system sent (or would have sent).
 - Admins (and drivers) have no cart or "My Orders": they don't buy.

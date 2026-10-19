@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductSize> ProductSizes => Set<ProductSize>();
+    public DbSet<ProductColor> ProductColors => Set<ProductColor>();
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
     public DbSet<DriverReview> DriverReviews => Set<DriverReview>();
     public DbSet<ReviewReaction> ReviewReactions => Set<ReviewReaction>();
@@ -58,6 +59,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(s => s.Product).WithMany(p => p.Sizes).HasForeignKey(s => s.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.Entity<ProductSize>().HasIndex(s => new { s.ProductId, s.Size }).IsUnique();
+
+        builder.Entity<ProductColor>()
+            .HasOne(c => c.Product).WithMany(p => p.Colors).HasForeignKey(c => c.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<ProductColor>().HasIndex(c => new { c.ProductId, c.Name }).IsUnique();
 
         builder.Entity<ProductImage>()
             .HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId)

@@ -22,7 +22,7 @@ public class ProductsController : Controller
     }
 
     public async Task<IActionResult> Index() =>
-        View(await _db.Products.Include(p => p.Images).Include(p => p.Sizes).OrderBy(p => p.Category).ThenBy(p => p.Name).ToListAsync());
+        View(await _db.Products.Include(p => p.Images).Include(p => p.Sizes).Include(p => p.Colors).OrderBy(p => p.Category).ThenBy(p => p.Name).ToListAsync());
 
     [HttpGet]
     public IActionResult Create() => View("Edit", new Product());
@@ -30,13 +30,14 @@ public class ProductsController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).Include(p => p.Colors).FirstOrDefaultAsync(p => p.Id == id);
         return product == null ? NotFound() : View(product);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(Product model, List<IFormFile>? newImages, string? imageUrl,
-        List<string>? sizeName, List<int?>? sizeQty)
+        List<string>? sizeName, List<int?>? sizeQty,
+        List<string>? colorName, List<string>? colorHex, List<int?>? colorQty)
     {
         // Sizes arrive as two parallel lists: ticked standard sizes plus any "other" sizes typed in.
         var sizes = new List<ProductSize>();
@@ -56,6 +57,28 @@ public class ProductsController : Controller
         }
         if (sizes.Count == 0) ModelState.AddModelError("sizes", "Tick at least one size and enter its quantity.");
 
+        // Colours (optional): name + swatch + quantity. Their total can't be more than the sizes total.
+        var colors = new List<ProductColor>();
+        colorName ??= new(); colorHex ??= new(); colorQty ??= new();
+        for (var i = 0; i < colorName.Count; i++)
+        {
+            var name = colorName[i]?.Trim();
+            var qty = i < colorQty.Count ? colorQty[i] : null;
+            var hex = i < colorHex.Count ? colorHex[i]?.Trim() : null;
+            if (string.IsNullOrEmpty(name) && qty is null or 0) continue; // empty row
+            if (string.IsNullOrEmpty(name)) { ModelState.AddModelError("colors", "Every colour needs a name, e.g. Navy."); continue; }
+            if (name.Length > 30) { ModelState.AddModelError("colors", $"Colour \"{name}\" is too long (30 characters max)."); continue; }
+            if (qty is null or < 0 or > 100000) { ModelState.AddModelError("colors", $"Enter a quantity of 0 or more for {name}."); continue; }
+            if (colors.Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
+            { ModelState.AddModelError("colors", $"Colour {name} is listed twice."); continue; }
+            if (hex == null || !System.Text.RegularExpressions.Regex.IsMatch(hex, "^#[0-9a-fA-F]{6}$")) hex = "#888888";
+            colors.Add(new ProductColor { Name = name, Hex = hex.ToUpperInvariant(), Quantity = qty.Value, SortOrder = colors.Count });
+        }
+        var sizesTotal = sizes.Sum(x => x.Quantity);
+        var colorsTotal = colors.Sum(c => c.Quantity);
+        if (colorsTotal > sizesTotal)
+            ModelState.AddModelError("colors", $"The colour quantities add up to {colorsTotal}, which is more than the total of {sizesTotal} items (from the sizes). Lower some colour quantities or add more stock to the sizes.");
+
         if (model.OriginalPrice.HasValue && model.OriginalPrice <= model.Price)
             ModelState.AddModelError(nameof(model.OriginalPrice), "The original price must be higher than the now price, or left empty.");
 
@@ -66,7 +89,7 @@ public class ProductsController : Controller
         }
         else
         {
-            product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == model.Id)
+            product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).Include(p => p.Colors).FirstOrDefaultAsync(p => p.Id == model.Id)
                       ?? throw new InvalidOperationException();
         }
 
@@ -89,6 +112,7 @@ public class ProductsController : Controller
         {
             if (model.Id != 0) model.Images = product.Images;
             model.Sizes = sizes; // keep what the admin entered
+            model.Colors = colors;
             return View("Edit", model);
         }
 
@@ -117,6 +141,16 @@ public class ProductsController : Controller
             else { existingSize.Size = size.Size; existingSize.Quantity = size.Quantity; existingSize.SortOrder = size.SortOrder; }
         }
         product.RecalculateStock();
+
+        foreach (var old in product.Colors.ToList())
+            if (!colors.Any(c => string.Equals(c.Name, old.Name, StringComparison.OrdinalIgnoreCase)))
+                product.Colors.Remove(old);
+        foreach (var c in colors)
+        {
+            var existingColor = product.FindColor(c.Name);
+            if (existingColor == null) product.Colors.Add(c);
+            else { existingColor.Name = c.Name; existingColor.Hex = c.Hex; existingColor.Quantity = c.Quantity; existingColor.SortOrder = c.SortOrder; }
+        }
 
         var order = product.Images.Count == 0 ? 0 : product.Images.Max(i => i.SortOrder) + 1;
         foreach (var f in files)

@@ -16,6 +16,9 @@ public class CartItem
     [StringLength(10)]
     public string? Size { get; set; }
 
+    [StringLength(30)]
+    public string? Color { get; set; }
+
     [Range(1, 100)]
     public int Quantity { get; set; } = 1;
 

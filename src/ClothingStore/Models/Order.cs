@@ -124,8 +124,14 @@ public class OrderItem
     [StringLength(10)]
     public string? Size { get; set; }
 
+    [StringLength(30)]
+    public string? Color { get; set; }
+
     [Column(TypeName = "decimal(18,2)")]
     public decimal UnitPrice { get; set; }
+
+    /// <summary>"Size M · Navy" style label for receipts and lists.</summary>
+    public string Variant => string.Join(" · ", new[] { string.IsNullOrEmpty(Size) ? null : $"Size {Size}", Color }.Where(x => !string.IsNullOrEmpty(x)));
 
     public int Quantity { get; set; }
 

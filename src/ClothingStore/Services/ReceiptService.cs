@@ -30,6 +30,12 @@ public class ReceiptService
         _logger = logger;
     }
 
+    private static string SizeColor(OrderItem i)
+    {
+        var s = string.Join(" · ", new[] { i.Size, i.Color }.Where(x => !string.IsNullOrEmpty(x)));
+        return s.Length == 0 ? "-" : s;
+    }
+
     public static string FileName(Order order) => $"MandL-receipt-order-{order.Id}.pdf";
 
     public Task<Order?> LoadAsync(int orderId) =>
@@ -109,7 +115,7 @@ public class ReceiptService
                     table.ColumnsDefinition(c =>
                     {
                         c.RelativeColumn(5);
-                        c.RelativeColumn(1.4f);
+                        c.RelativeColumn(2.2f);
                         c.RelativeColumn(1);
                         c.RelativeColumn(2);
                         c.RelativeColumn(2);
@@ -119,7 +125,7 @@ public class ReceiptService
                     {
                         static IContainer Head(IContainer c) => c.Background(Brand).PaddingVertical(6).PaddingHorizontal(6);
                         h.Cell().Element(Head).Text("Item").FontColor(Colors.White).Bold();
-                        h.Cell().Element(Head).Text("Size").FontColor(Colors.White).Bold();
+                        h.Cell().Element(Head).Text("Size / colour").FontColor(Colors.White).Bold();
                         h.Cell().Element(Head).AlignRight().Text("Qty").FontColor(Colors.White).Bold();
                         h.Cell().Element(Head).AlignRight().Text("Unit price").FontColor(Colors.White).Bold();
                         h.Cell().Element(Head).AlignRight().Text("Amount").FontColor(Colors.White).Bold();
@@ -131,7 +137,7 @@ public class ReceiptService
                         string bg = i++ % 2 == 0 ? "#FFFFFF" : "#F5F7F6";
                         IContainer Cell(IContainer c) => c.Background(bg).BorderBottom(0.5f).BorderColor("#E1E8E6").PaddingVertical(6).PaddingHorizontal(6);
                         table.Cell().Element(Cell).Text(item.ProductName);
-                        table.Cell().Element(Cell).Text(item.Size ?? "-");
+                        table.Cell().Element(Cell).Text(SizeColor(item));
                         table.Cell().Element(Cell).AlignRight().Text(item.Quantity.ToString());
                         table.Cell().Element(Cell).AlignRight().Text(item.UnitPrice.ToMoney());
                         table.Cell().Element(Cell).AlignRight().Text(item.LineTotal.ToMoney());
@@ -185,7 +191,7 @@ public class ReceiptService
         var rows = string.Join("", order.Items.Select(i => $"""
             <tr>
               <td style="padding:8px;border-bottom:1px solid #e1e8e6">{WebUtility.HtmlEncode(i.ProductName)}</td>
-              <td style="padding:8px;border-bottom:1px solid #e1e8e6">{WebUtility.HtmlEncode(i.Size ?? "-")}</td>
+              <td style="padding:8px;border-bottom:1px solid #e1e8e6">{WebUtility.HtmlEncode(SizeColor(i))}</td>
               <td style="padding:8px;border-bottom:1px solid #e1e8e6;text-align:right">{i.Quantity}</td>
               <td style="padding:8px;border-bottom:1px solid #e1e8e6;text-align:right">{i.LineTotal.ToMoney()}</td>
             </tr>
@@ -199,7 +205,7 @@ public class ReceiptService
             <p>We've received your payment for order <strong>#{order.Id}</strong>. Your proof of payment is attached as a PDF.</p>
             <table style="width:100%;border-collapse:collapse;font-size:14px;margin:12px 0">
               <thead><tr style="background:#183630;color:#fff">
-                <th style="padding:8px;text-align:left">Item</th><th style="padding:8px;text-align:left">Size</th>
+                <th style="padding:8px;text-align:left">Item</th><th style="padding:8px;text-align:left">Size / colour</th>
                 <th style="padding:8px;text-align:right">Qty</th><th style="padding:8px;text-align:right">Amount</th>
               </tr></thead>
               <tbody>{rows}</tbody>

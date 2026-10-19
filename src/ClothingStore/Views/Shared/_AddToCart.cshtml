@@ -5,12 +5,15 @@
 @{
     var signedIn = SignInManager.IsSignedIn(User);
     var compact = ViewData["Compact"] as bool? ?? false;
+    var colorsInStock = Model.OrderedColors.Where(c => c.Quantity > 0).ToList();
+    var firstSizeQty = Model.OrderedSizes.FirstOrDefault(s => s.Quantity > 0)?.Quantity ?? 1;
+    var startMax = colorsInStock.Count > 0 ? Math.Min(firstSizeQty, colorsInStock[0].Quantity) : firstSizeQty;
 }
 @if (signedIn && !Roles.IsShopper(User))
 {
     @* nothing for admins and drivers *@
 }
-else if (Model.Stock <= 0)
+else if (Model.Stock <= 0 || (Model.HasColors && colorsInStock.Count == 0))
 {
     <button class="btn btn-secondary w-100" disabled>Out of stock</button>
 }
@@ -24,6 +27,15 @@ else
         }
         @if (compact)
         {
+            @if (colorsInStock.Count > 0)
+            {
+                <select name="color" class="form-select form-select-sm mb-2" aria-label="Colour">
+                    @foreach (var c in colorsInStock)
+                    {
+                        <option value="@c.Name">@c.Name @(c.Quantity <= 5 ? $"– only {c.Quantity} left" : "")</option>
+                    }
+                </select>
+            }
             <div class="input-group">
                 <select name="size" class="form-select" aria-label="Size">
                     <partial name="_SizeOptions" model="Model" />
@@ -34,6 +46,20 @@ else
         else
         {
             <div class="row g-2">
+                @if (colorsInStock.Count > 0)
+                {
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Colour: <span class="text-body" data-color-label>@colorsInStock[0].Name</span></label>
+                        <div class="color-pick" role="radiogroup" aria-label="Colour">
+                            @for (var i = 0; i < colorsInStock.Count; i++)
+                            {
+                                var c = colorsInStock[i];
+                                <input type="radio" name="color" id="color-@Model.Id-@i" value="@c.Name" data-qty="@c.Quantity" checked="@(i == 0)" data-color-radio />
+                                <label for="color-@Model.Id-@i"><span class="swatch" style="background:@c.Hex"></span>@c.Name@(c.Quantity <= 5 ? $" ({c.Quantity} left)" : "")</label>
+                            }
+                        </div>
+                    </div>
+                }
                 <div class="col-7">
                     <label class="form-label small mb-1">Size</label>
                     <select name="size" class="form-select" aria-label="Size" data-size-select>
@@ -42,7 +68,7 @@ else
                 </div>
                 <div class="col-5">
                     <label class="form-label small mb-1">Quantity</label>
-                    <input type="number" name="quantity" value="1" min="1" max="@(Model.OrderedSizes.FirstOrDefault(s => s.Quantity > 0)?.Quantity ?? 1)" class="form-control" aria-label="Quantity" data-qty-input />
+                    <input type="number" name="quantity" value="1" min="1" max="@startMax" class="form-control" aria-label="Quantity" data-qty-input />
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary btn-lg w-100 mt-1"><i class="bi bi-bag-plus me-2"></i>Add to cart</button>

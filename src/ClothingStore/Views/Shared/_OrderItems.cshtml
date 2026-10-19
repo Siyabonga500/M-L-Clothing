@@ -1,13 +1,14 @@
 @model Order
 <div class="table-responsive">
     <table class="table align-middle">
-        <thead><tr><th>Product</th><th>Size</th><th>Price</th><th>Qty</th><th class="text-end">Total</th></tr></thead>
+        <thead><tr><th>Product</th><th>Size</th><th>Colour</th><th>Price</th><th>Qty</th><th class="text-end">Total</th></tr></thead>
         <tbody>
         @foreach (var i in Model.Items)
         {
             <tr>
                 <td class="fw-semibold">@i.ProductName</td>
                 <td>@i.Size</td>
+                <td>@(i.Color ?? "–")</td>
                 <td>@i.UnitPrice.ToMoney()</td>
                 <td>@i.Quantity</td>
                 <td class="text-end">@i.LineTotal.ToMoney()</td>
@@ -15,12 +16,12 @@
         }
         </tbody>
         <tfoot>
-            <tr><td colspan="4" class="text-end text-muted">Items</td><td class="text-end">@Model.ItemsTotal.ToMoney()</td></tr>
+            <tr><td colspan="5" class="text-end text-muted">Items</td><td class="text-end">@Model.ItemsTotal.ToMoney()</td></tr>
             <tr>
-                <td colspan="4" class="text-end text-muted">@(Model.IsDelivery ? $"Delivery fee{(Model.DistanceKm.HasValue ? $" ({Model.DistanceKm} km)" : "")}" : "Collection")</td>
+                <td colspan="5" class="text-end text-muted">@(Model.IsDelivery ? $"Delivery fee{(Model.DistanceKm.HasValue ? $" ({Model.DistanceKm} km)" : "")}" : "Collection")</td>
                 <td class="text-end">@(Model.DeliveryFee > 0 ? Model.DeliveryFee.ToMoney() : "Free")</td>
             </tr>
-            <tr class="fw-bold"><td colspan="4" class="text-end">Total</td><td class="text-end text-brand">@Model.Total.ToMoney()</td></tr>
+            <tr class="fw-bold"><td colspan="5" class="text-end">Total</td><td class="text-end text-brand">@Model.Total.ToMoney()</td></tr>
         </tfoot>
     </table>
 </div>

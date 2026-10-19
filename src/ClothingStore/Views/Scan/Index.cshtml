@@ -19,7 +19,7 @@
             </div>
             <p class="mb-1"><strong>Customer:</strong> @Model.RecipientName</p>
             <p class="mb-1"><strong>@(Model.IsDelivery ? "Address" : "Collection")</strong>: @Model.ShippingAddress</p>
-            <p class="mb-3"><strong>Items:</strong> @string.Join(", ", Model.Items.Select(i => $"{i.Quantity}× {i.ProductName} ({i.Size})"))</p>
+            <p class="mb-3"><strong>Items:</strong> @string.Join(", ", Model.Items.Select(i => $"{i.Quantity}× {i.ProductName} ({i.Variant})"))</p>
             @if (state == QrState.Active)
             {
                 <form asp-action="Confirm" method="post">

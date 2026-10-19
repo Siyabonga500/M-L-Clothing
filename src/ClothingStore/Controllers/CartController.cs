@@ -18,9 +18,9 @@ public class CartController : Controller
     public async Task<IActionResult> Index() => View(await _cart.GetCartAsync(UserId));
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Add(int productId, string? size, int quantity = 1, string? returnUrl = null)
+    public async Task<IActionResult> Add(int productId, string? size, int quantity = 1, string? returnUrl = null, string? color = null)
     {
-        var error = await _cart.AddAsync(UserId, productId, size, quantity);
+        var error = await _cart.AddAsync(UserId, productId, size, quantity, color);
         if (error != null) TempData["Error"] = error;
         else TempData["Success"] = "Item added to your cart.";
 
@@ -31,9 +31,9 @@ public class CartController : Controller
     // Reached when an anonymous visitor clicks "Add to cart": the [Authorize] filter
     // sends them to the login page first, then back here to finish adding the item.
     [HttpGet]
-    public async Task<IActionResult> AddAfterLogin(int productId, string? size, int quantity = 1)
+    public async Task<IActionResult> AddAfterLogin(int productId, string? size, int quantity = 1, string? color = null)
     {
-        var error = await _cart.AddAsync(UserId, productId, size, quantity);
+        var error = await _cart.AddAsync(UserId, productId, size, quantity, color);
         if (error != null) TempData["Error"] = error;
         else TempData["Success"] = "Item added to your cart.";
         return RedirectToAction(nameof(Index));

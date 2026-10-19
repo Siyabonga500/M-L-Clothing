@@ -142,6 +142,10 @@ namespace ClothingStore.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Color")
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("INTEGER");
 
@@ -382,6 +386,10 @@ namespace ClothingStore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Color")
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("INTEGER");
 
@@ -450,6 +458,39 @@ namespace ClothingStore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.ProductColor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Hex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ProductColors");
                 });
 
             modelBuilder.Entity("ClothingStore.Models.ProductImage", b =>
@@ -755,6 +796,17 @@ namespace ClothingStore.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.ProductColor", b =>
+                {
+                    b.HasOne("ClothingStore.Models.Product", "Product")
+                        .WithMany("Colors")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("ClothingStore.Models.ProductImage", b =>
                 {
                     b.HasOne("ClothingStore.Models.Product", "Product")
@@ -861,6 +913,8 @@ namespace ClothingStore.Migrations
 
             modelBuilder.Entity("ClothingStore.Models.Product", b =>
                 {
+                    b.Navigation("Colors");
+
                     b.Navigation("Images");
 
                     b.Navigation("Sizes");

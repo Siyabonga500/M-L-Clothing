@@ -4,8 +4,19 @@
     var images = Model.Images.OrderBy(i => i.SortOrder).ToList();
     var slotsLeft = Product.MaxImages - images.Count;
     var standardSizes = new[] { "XS", "S", "M", "L", "XL", "XXL", "3XL" };
+    var presetColors = new[] { ("Black", "#1C1C1C"), ("White", "#F5F5F5"), ("Grey", "#8A8F93"), ("Navy", "#1F3A5F"), ("Blue", "#2F6DB5"),
+                               ("Red", "#B3261E"), ("Green", "#2E6E4F"), ("Olive", "#6B6B2E"), ("Beige", "#D8C7A6"), ("Brown", "#6B4A2E"),
+                               ("Pink", "#E59AB4"), ("Yellow", "#E0B33B") };
     var otherSizes = Model.OrderedSizes.Where(x => !standardSizes.Contains(x.Size, StringComparer.OrdinalIgnoreCase)).ToList();
 }
+<template id="colorRowTemplate">
+    <div class="row g-2 mb-2 color-row align-items-center">
+        <div class="col-2 col-md-1"><input type="color" name="colorHex" class="form-control form-control-color w-100" value="#888888" title="Swatch colour" /></div>
+        <div class="col-5 col-md-6"><input name="colorName" class="form-control" placeholder="Colour, e.g. Navy" maxlength="30" /></div>
+        <div class="col-3"><input type="number" name="colorQty" min="0" class="form-control" placeholder="Quantity" /></div>
+        <div class="col-2"><button type="button" class="btn btn-outline-danger w-100" data-remove-color title="Remove"><i class="bi bi-x-lg"></i></button></div>
+    </div>
+</template>
 <template id="otherRowTemplate">
     <div class="row g-2 mb-2 other-row">
         <div class="col-6"><input name="sizeName" class="form-control" placeholder="Size, e.g. 32 or XXXL" maxlength="20" /></div>
@@ -95,6 +106,37 @@
                 </div>
                 <span class="text-danger small d-block mt-1" asp-validation-for="Sizes"></span>
                 @foreach (var err in ViewData.ModelState["sizes"]?.Errors ?? new())
+                {
+                    <div class="text-danger small">@err.ErrorMessage</div>
+                }
+            </div>
+
+            <div class="col-12">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+                    <div class="section-title mb-0">Colours <span class="text-muted fw-normal small">(optional)</span></div>
+                    <span class="eta-box small py-1" id="colorTotalBox">Colours: <strong id="colorTotal">0</strong> of <strong id="colorMax">0</strong> items</span>
+                </div>
+                <div class="form-text mb-2">Add each colour you stock and how many. Together they can't be more than the total from the sizes.</div>
+                <div class="d-flex flex-wrap gap-1 mb-2" id="colorPresets">
+                    @foreach (var (name, hex) in presetColors)
+                    {
+                        <button type="button" class="btn btn-sm color-preset" data-name="@name" data-hex="@hex"><span class="swatch" style="background:@hex"></span>@name</button>
+                    }
+                </div>
+                <div id="colorRows">
+                    @foreach (var c in Model.OrderedColors)
+                    {
+                        <div class="row g-2 mb-2 color-row align-items-center">
+                            <div class="col-2 col-md-1"><input type="color" name="colorHex" class="form-control form-control-color w-100" value="@c.Hex" title="Swatch colour" /></div>
+                            <div class="col-5 col-md-6"><input name="colorName" class="form-control" placeholder="Colour, e.g. Navy" maxlength="30" value="@c.Name" /></div>
+                            <div class="col-3"><input type="number" name="colorQty" min="0" class="form-control" placeholder="Quantity" value="@c.Quantity" /></div>
+                            <div class="col-2"><button type="button" class="btn btn-outline-danger w-100" data-remove-color title="Remove"><i class="bi bi-x-lg"></i></button></div>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addColor"><i class="bi bi-plus-lg me-1"></i>Add colour</button>
+                <div class="text-danger small mt-1 d-none" id="colorOver"></div>
+                @foreach (var err in ViewData.ModelState["colors"]?.Errors ?? new())
                 {
                     <div class="text-danger small">@err.ErrorMessage</div>
                 }
@@ -205,6 +247,44 @@
         });
         document.addEventListener('input', e => { if (e.target.name === 'sizeQty') updateTotal(); });
         updateTotal();
+
+        // ----- Colours: total may not exceed the sizes total -----
+        const colorRows = document.getElementById('colorRows');
+        const form = colorRows.closest('form');
+        function sizesTotal() { return parseInt(totalEl.textContent || '0', 10) || 0; }
+        function updateColors() {
+            let t = 0;
+            colorRows.querySelectorAll('input[name="colorQty"]').forEach(i => t += parseInt(i.value || '0', 10) || 0);
+            const max = sizesTotal(), over = t > max;
+            document.getElementById('colorTotal').textContent = t;
+            document.getElementById('colorMax').textContent = max;
+            document.getElementById('colorTotalBox').classList.toggle('over', over);
+            const msg = document.getElementById('colorOver');
+            msg.classList.toggle('d-none', !over);
+            msg.textContent = over ? `Colour quantities (${t}) are more than the total items (${max}). Lower them or add stock to the sizes.` : '';
+            return !over;
+        }
+        function addColorRow(name, hex) {
+            if (name && [...colorRows.querySelectorAll('input[name="colorName"]')].some(i => i.value.trim().toLowerCase() === name.toLowerCase())) return;
+            colorRows.appendChild(document.getElementById('colorRowTemplate').content.cloneNode(true));
+            const row = colorRows.lastElementChild;
+            if (name) row.querySelector('input[name="colorName"]').value = name;
+            if (hex) row.querySelector('input[name="colorHex"]').value = hex;
+            row.querySelector(name ? 'input[name="colorQty"]' : 'input[name="colorName"]').focus();
+            updateColors();
+        }
+        document.getElementById('addColor').addEventListener('click', () => addColorRow());
+        document.querySelectorAll('.color-preset').forEach(b => b.addEventListener('click', () => addColorRow(b.dataset.name, b.dataset.hex)));
+        colorRows.addEventListener('click', e => {
+            const btn = e.target.closest('[data-remove-color]');
+            if (btn) { btn.closest('.color-row').remove(); updateColors(); }
+        });
+        document.addEventListener('input', e => { if (['colorQty', 'sizeQty'].includes(e.target.name)) updateColors(); });
+        document.addEventListener('change', e => { if (e.target.matches('[data-std-size], #otherToggle')) setTimeout(updateColors); });
+        form.addEventListener('submit', e => {
+            if (!updateColors()) { e.preventDefault(); document.getElementById('colorOver').scrollIntoView({ block: 'center' }); }
+        });
+        updateColors();
 
         const fileInput = document.getElementById('fileInput');
         if (fileInput) fileInput.addEventListener('change', () => {

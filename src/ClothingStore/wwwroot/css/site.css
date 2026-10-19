@@ -299,3 +299,16 @@ html { scroll-behavior: smooth; }
 #products { scroll-margin-top: 1rem; }
 /* The full-width banner uses 100vw, which includes the scrollbar on Windows; clip stops a sideways scroll. */
 html, body { overflow-x: clip; }
+
+/* ----- Colours ----- */
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); vertical-align: -2px; margin-right: .35rem; }
+.color-preset { border: 1px solid var(--border); background: var(--surface); border-radius: 99px; font-weight: 500; padding: .2rem .65rem; }
+.color-preset:hover { border-color: var(--brand); }
+#colorTotalBox.over { background: #fbe4e1; color: var(--sale); }
+.color-pick { display: flex; flex-wrap: wrap; gap: .4rem; }
+.color-pick input { position: absolute; opacity: 0; width: 0; }
+.color-pick label { display: inline-flex; align-items: center; border: 2px solid var(--border); border-radius: 99px; padding: .3rem .75rem .3rem .45rem;
+    cursor: pointer; font-size: .9rem; background: var(--surface); }
+.color-pick label .swatch { width: 18px; height: 18px; }
+.color-pick input:checked + label { border-color: var(--brand); background: var(--tint); font-weight: 600; }
+.color-pick input:focus-visible + label { outline: 2px solid var(--brand); outline-offset: 2px; }

@@ -50,6 +50,17 @@ public class Product
 
     public void RecalculateStock() => Stock = Sizes.Sum(s => s.Quantity);
 
+    /// <summary>Optional colours with their own quantities. Their total may not exceed <see cref="Stock"/>.</summary>
+    public List<ProductColor> Colors { get; set; } = new();
+
+    [NotMapped]
+    public IEnumerable<ProductColor> OrderedColors => Colors.OrderBy(c => c.SortOrder).ThenBy(c => c.Id);
+
+    public bool HasColors => Colors.Count > 0;
+
+    public ProductColor? FindColor(string? color) =>
+        Colors.FirstOrDefault(c => string.Equals(c.Name, color, StringComparison.OrdinalIgnoreCase));
+
     public string? MainImageUrl => Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.Url;
 
     public bool IsOnSale => OriginalPrice.HasValue && OriginalPrice.Value > Price;
@@ -82,6 +93,26 @@ public class ProductSize
     /// <summary>Size label: letters (S, XL) or numbers (32, 9).</summary>
     [Required, StringLength(20)]
     public string Size { get; set; } = string.Empty;
+
+    [Range(0, 100000)]
+    public int Quantity { get; set; }
+
+    public int SortOrder { get; set; }
+}
+
+public class ProductColor
+{
+    public int Id { get; set; }
+
+    public int ProductId { get; set; }
+    public Product? Product { get; set; }
+
+    [Required, StringLength(30)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Swatch colour shown to customers, e.g. #1F3A5F.</summary>
+    [StringLength(7)]
+    public string Hex { get; set; } = "#888888";
 
     [Range(0, 100000)]
     public int Quantity { get; set; }

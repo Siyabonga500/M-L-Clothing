@@ -27,6 +27,15 @@
                     <td>
                         <partial name="_StockPill" model="p" />
                         <div class="small text-muted mt-1">@string.Join(" · ", p.OrderedSizes.Select(x => $"{x.Size}: {x.Quantity}"))</div>
+                        @if (p.HasColors)
+                        {
+                            <div class="small mt-1">
+                                @foreach (var c in p.OrderedColors)
+                                {
+                                    <span class="me-2 text-nowrap"><span class="swatch" style="background:@c.Hex"></span>@c.Name: @c.Quantity</span>
+                                }
+                            </div>
+                        }
                     </td>
                     <td>@p.Images.Count / @Product.MaxImages</td>
                     <td>@(p.IsActive ? "Yes" : "No")</td>

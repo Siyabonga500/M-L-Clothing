@@ -84,11 +84,14 @@ public class CheckoutController : Controller
             return RedirectToAction("Index", "Cart");
         }
 
+        // Totals per size and per colour across the cart must still be in stock.
         var outOfStock = cart.Items.FirstOrDefault(i =>
-            !i.Product!.IsActive || i.Quantity > (i.Product.FindSize(i.Size)?.Quantity ?? 0));
+            !i.Product!.IsActive
+            || cart.Items.Where(x => x.ProductId == i.ProductId && x.Size == i.Size).Sum(x => x.Quantity) > (i.Product.FindSize(i.Size)?.Quantity ?? 0)
+            || (i.Color != null && cart.Items.Where(x => x.ProductId == i.ProductId && x.Color == i.Color).Sum(x => x.Quantity) > (i.Product.FindColor(i.Color)?.Quantity ?? 0)));
         if (outOfStock != null)
         {
-            TempData["Error"] = $"\"{outOfStock.Product!.Name}\" (size {outOfStock.Size}) is no longer available in that quantity.";
+            TempData["Error"] = $"\"{outOfStock.Product!.Name}\" (size {outOfStock.Size}{(outOfStock.Color != null ? ", " + outOfStock.Color : "")}) is no longer available in that quantity.";
             return RedirectToAction("Index", "Cart");
         }
 
@@ -107,6 +110,7 @@ public class CheckoutController : Controller
                 ProductId = i.ProductId,
                 ProductName = i.Product!.Name,
                 Size = i.Size,
+                Color = i.Color,
                 UnitPrice = i.Product.Price,
                 Quantity = i.Quantity
             }).ToList()
@@ -143,7 +147,7 @@ public class CheckoutController : Controller
                     UnitAmount = (long)Math.Round(i.UnitPrice * 100m),
                     ProductData = new SessionLineItemPriceDataProductDataOptions
                     {
-                        Name = string.IsNullOrEmpty(i.Size) ? i.ProductName : $"{i.ProductName} (Size {i.Size})"
+                        Name = string.IsNullOrEmpty(i.Variant) ? i.ProductName : $"{i.ProductName} ({i.Variant})"
                     }
                 }
             }).ToList()
