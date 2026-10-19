@@ -23,7 +23,9 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 
 **Customers**
 - A large photo banner ("Fashion Redefined") opens the shop page, with **Shop now** and **Contact us** buttons.
-  Change the photo and text in `appsettings.json` → `Store`: `HeroTitle`, `HeroSubtitle`, `HeroImageUrl`.
+  The default picture is a built-in illustration in the store's colours (`wwwroot/img/hero-shop.svg`). To use your
+  own photo, put it in `wwwroot/img/` and set `Store:HeroImageUrl` (e.g. `/img/my-photo.jpg`); `HeroTitle` and
+  `HeroSubtitle` change the text. Photos are tinted green automatically so they match the site.
 - **Contact us** page: store address, hours, map and a message form. Messages are emailed to `Store:Email`
   (or the admin email if that's empty) and also appear under **Admin → Emails sent**.
 - Search by name, category and **price range** (minimum and maximum).

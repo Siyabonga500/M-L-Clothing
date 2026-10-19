@@ -23,7 +23,7 @@ public class StoreSettings
     // Big photo banner at the top of the shop page.
     public string HeroTitle { get; set; } = "Fashion Redefined";
     public string HeroSubtitle { get; set; } = "Quality clothing for every occasion";
-    public string HeroImageUrl { get; set; } = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80";
+    public string HeroImageUrl { get; set; } = "/img/hero-shop.svg";
     public string CollectionHours { get; set; } = "Mon–Fri 08:00–17:00, Sat 08:00–13:00";
 
     /// <summary>Customers are told their order arrives within this many days of driver assignment.</summary>
