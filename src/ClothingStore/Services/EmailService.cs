@@ -61,13 +61,34 @@ public class EmailService
             }
             catch (Exception ex)
             {
-                log.Error = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                var message = Explain(ex);
+                log.Error = message.Length > 1000 ? message[..1000] : message;
                 _logger.LogError(ex, "Failed to send email to {To}", to);
             }
         }
 
         _db.EmailLogs.Add(log);
         await _db.SaveChangesAsync();
+    }
+
+    /// <summary>Turns common SMTP failures into a plain explanation of how to fix them.</summary>
+    private string Explain(Exception ex)
+    {
+        var text = ex.Message + (ex.InnerException != null ? " " + ex.InnerException.Message : "");
+        var gmail = _settings.SmtpHost.Contains("gmail", StringComparison.OrdinalIgnoreCase);
+        if (text.Contains("5.7.0") || text.Contains("5.7.8") || text.Contains("Authentication", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not authenticated", StringComparison.OrdinalIgnoreCase))
+        {
+            return gmail
+                ? "Gmail rejected the login. Gmail does not accept your normal password here: turn on 2-Step Verification, " +
+                  "create an App Password at https://myaccount.google.com/apppasswords and put its 16 letters (no spaces) in Email:Password. (" + text + ")"
+                : "The email server rejected the username or password. (" + text + ")";
+        }
+        if (text.Contains("timed out", StringComparison.OrdinalIgnoreCase) || text.Contains("could not be resolved", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("actively refused", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not known", StringComparison.OrdinalIgnoreCase) || text.Contains("No such host", StringComparison.OrdinalIgnoreCase))
+            return "Could not reach the email server. Check SmtpHost/SmtpPort and your internet or firewall. (" + text + ")";
+        return text;
     }
 
     /// <summary>Wraps content in the store's branded email layout.</summary>

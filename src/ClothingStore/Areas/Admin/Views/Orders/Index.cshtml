@@ -3,6 +3,10 @@
     ViewData["Title"] = "Manage orders";
     var current = ViewData["Status"] as OrderStatus?;
     var filter = ViewData["Filter"] as string;
+    var dates = (OrderHistoryFilter)ViewData["Dates"]!;
+    var keep = new List<(string, string)>();
+    if (current.HasValue) keep.Add(("status", current.Value.ToString()));
+    if (filter != null) keep.Add(("filter", filter));
 }
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
     <h1 class="page-title mb-0">Orders</h1>
@@ -16,6 +20,7 @@
         </select>
     </form>
 </div>
+<partial name="_OrderFilter" model="dates" view-data='new ViewDataDictionary(ViewData) { ["Keep"] = keep, ["ClearUrl"] = Url.Action("Index", new { status = current, filter }) }' />
 <div class="chip-row mb-3">
     <a class="chip @(filter == null && current == null ? "active" : "")" asp-action="Index">All</a>
     <a class="chip @(filter == "needs-driver" ? "active" : "")" asp-action="Index" asp-route-filter="needs-driver">Needs a driver</a>

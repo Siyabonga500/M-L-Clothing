@@ -9,6 +9,31 @@ public class HomeViewModel
     public List<string> Categories { get; set; } = new();
     public string? Category { get; set; }
     public string? Search { get; set; }
+    public decimal? MinPrice { get; set; }
+    public decimal? MaxPrice { get; set; }
+    public bool HasFilters => !string.IsNullOrWhiteSpace(Search) || MinPrice.HasValue || MaxPrice.HasValue || !string.IsNullOrEmpty(Category);
+}
+
+public class OrderHistoryFilter
+{
+    /// <summary>"newest" (default) or "oldest".</summary>
+    public string Sort { get; set; } = "newest";
+
+    [DataType(DataType.Date)]
+    public DateTime? From { get; set; }
+
+    [DataType(DataType.Date)]
+    public DateTime? To { get; set; }
+
+    public bool HasDates => From.HasValue || To.HasValue;
+
+    /// <summary>Filters by order date (From/To are whole days, local time) and sorts.</summary>
+    public IEnumerable<Order> Apply(IEnumerable<Order> orders)
+    {
+        if (From.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime().Date >= From.Value.Date);
+        if (To.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime().Date <= To.Value.Date);
+        return Sort == "oldest" ? orders.OrderBy(o => o.CreatedAt) : orders.OrderByDescending(o => o.CreatedAt);
+    }
 }
 
 public class CartViewModel

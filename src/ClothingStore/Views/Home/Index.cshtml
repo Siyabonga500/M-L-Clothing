@@ -30,21 +30,51 @@
     </div>
 </section>
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+<form method="get" class="surface p-3 mb-3">
+    <input type="hidden" name="category" value="@Model.Category" />
+    <div class="row g-2 align-items-end">
+        <div class="col-lg-5">
+            <label class="form-label small mb-1" for="search">Search</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="search" id="search" name="search" value="@Model.Search" class="form-control border-start-0" placeholder="Search clothes…" />
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <label class="form-label small mb-1" for="minPrice">Min price (R)</label>
+            <input type="number" id="minPrice" name="minPrice" value="@Model.MinPrice?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" min="0" step="1" class="form-control" placeholder="0" />
+        </div>
+        <div class="col-6 col-lg-2">
+            <label class="form-label small mb-1" for="maxPrice">Max price (R)</label>
+            <input type="number" id="maxPrice" name="maxPrice" value="@Model.MaxPrice?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" min="0" step="1" class="form-control" placeholder="Any" />
+        </div>
+        <div class="col-lg-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill"><i class="bi bi-funnel me-1"></i>Search</button>
+            @if (Model.HasFilters)
+            {
+                <a asp-action="Index" class="btn btn-outline-primary" title="Clear filters"><i class="bi bi-x-lg"></i></a>
+            }
+        </div>
+    </div>
+</form>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div class="chip-row">
-        <a class="chip @(string.IsNullOrEmpty(Model.Category) ? "active" : "")" asp-action="Index" asp-route-search="@Model.Search">All</a>
+        <a class="chip @(string.IsNullOrEmpty(Model.Category) ? "active" : "")" asp-action="Index"
+           asp-route-search="@Model.Search" asp-route-minPrice="@Model.MinPrice" asp-route-maxPrice="@Model.MaxPrice">All</a>
         @foreach (var c in Model.Categories)
         {
-            <a class="chip @(c == Model.Category ? "active" : "")" asp-action="Index" asp-route-category="@c" asp-route-search="@Model.Search">@c</a>
+            <a class="chip @(c == Model.Category ? "active" : "")" asp-action="Index" asp-route-category="@c"
+               asp-route-search="@Model.Search" asp-route-minPrice="@Model.MinPrice" asp-route-maxPrice="@Model.MaxPrice">@c</a>
         }
     </div>
-    <form method="get" class="d-flex gap-2" style="min-width:280px">
-        <input type="hidden" name="category" value="@Model.Category" />
-        <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-            <input type="search" name="search" value="@Model.Search" class="form-control border-start-0" placeholder="Search clothes…" />
-        </div>
-    </form>
+    <span class="small text-muted">
+        @Model.Products.Count item(s)
+        @if (Model.MinPrice.HasValue || Model.MaxPrice.HasValue)
+        {
+            <span>· @(Model.MinPrice?.ToMoney() ?? "R 0.00") – @(Model.MaxPrice?.ToMoney() ?? "any price")</span>
+        }
+    </span>
 </div>
 
 @if (!Model.Products.Any())

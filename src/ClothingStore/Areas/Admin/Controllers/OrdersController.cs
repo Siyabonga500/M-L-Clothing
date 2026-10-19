@@ -1,6 +1,7 @@
 using ClothingStore.Data;
 using ClothingStore.Models;
 using ClothingStore.Services;
+using ClothingStore.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,7 @@ public class OrdersController : Controller
 
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
-    public async Task<IActionResult> Index(OrderStatus? status, string? filter)
+    public async Task<IActionResult> Index(OrderStatus? status, string? filter, OrderHistoryFilter dates)
     {
         var query = _db.Orders.Include(o => o.User).Include(o => o.Driver).Include(o => o.Items)
             .Where(o => o.Status != OrderStatus.PendingPayment || status == OrderStatus.PendingPayment);
@@ -51,9 +52,11 @@ public class OrdersController : Controller
         if (filter == "needs-driver")
             query = query.Where(o => o.Fulfilment == FulfilmentMethod.Delivery && o.DriverId == null &&
                                      (o.Status == OrderStatus.Paid || o.Status == OrderStatus.Processing));
+        if (dates.From > dates.To) (dates.From, dates.To) = (dates.To, dates.From);
         ViewData["Status"] = status;
         ViewData["Filter"] = filter;
-        return View(await query.OrderByDescending(o => o.CreatedAt).ToListAsync());
+        ViewData["Dates"] = dates;
+        return View(dates.Apply(await query.ToListAsync()).ToList());
     }
 
     public async Task<IActionResult> Details(int id)

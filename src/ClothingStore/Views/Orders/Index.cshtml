@@ -3,7 +3,21 @@
     ViewData["Title"] = "My orders";
 }
 <h1 class="page-title mb-4">My orders</h1>
-@if (!Model.Any())
+@{ var filter = (OrderHistoryFilter)ViewData["Filter"]!; var total = (int)ViewData["TotalOrders"]!; }
+@if (total > 0)
+{
+    <partial name="_OrderFilter" model="filter" />
+    <p class="small text-muted">Showing @Model.Count of @total order(s)@(filter.HasDates ? $" from {filter.From?.ToString("dd MMM yyyy") ?? "the start"} to {filter.To?.ToString("dd MMM yyyy") ?? "today"}" : "").</p>
+}
+@if (total > 0 && !Model.Any())
+{
+    <div class="empty-state surface">
+        <i class="bi bi-calendar-x"></i>
+        <p class="lead mt-3">No orders in those dates.</p>
+        <a asp-action="Index" class="btn btn-outline-primary">Show all orders</a>
+    </div>
+}
+else if (!Model.Any())
 {
     <div class="empty-state surface">
         <i class="bi bi-box-seam"></i>

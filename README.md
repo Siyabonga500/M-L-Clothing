@@ -18,6 +18,7 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 ## Who can do what
 
 **Customers**
+- Search by name, category and **price range** (minimum and maximum).
 - Browse clothing without logging in: up to 4 pictures per item (use the **< >** arrows, keyboard arrows or swipe),
   sale price with the original price crossed out, **% off and amount saved**, the **total quantity** and
   **how many are left in each size**. Sold-out sizes can't be chosen.
@@ -30,7 +31,7 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   full km, e.g. 12.3 km = R120). Distance is estimated from the store to the pin on the map.
 - **Proof of payment**: as soon as payment is confirmed the customer is emailed a receipt listing the items, with a
   PDF attached. On the order page they can **Download PDF** or **Email it to me again**.
-- **My Orders**: progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
+- **My Orders**: sort **newest or oldest purchase first** and filter **from date – to date**; progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
   estimated arrival time once the driver leaves.
 
 **Admin** (`siya61512@gmail.com` / `Siyabonga@2`, created on first run)

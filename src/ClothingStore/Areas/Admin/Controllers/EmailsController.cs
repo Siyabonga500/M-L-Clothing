@@ -24,6 +24,19 @@ public class EmailsController : Controller
         return View(await _db.EmailLogs.OrderByDescending(e => e.CreatedAt).Take(200).ToListAsync());
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendTest(string to)
+    {
+        if (string.IsNullOrWhiteSpace(to)) to = User.Identity?.Name ?? "";
+        await _email.SendAsync(to, "Test email from your store",
+            EmailService.Layout("Email test", "It works!", "<p>If you can read this, your store's email settings are correct.</p>"));
+        var log = await _db.EmailLogs.OrderByDescending(e => e.Id).FirstAsync();
+        TempData[log.Sent ? "Success" : "Error"] = log.Sent
+            ? $"Test email sent to {to}. Check the inbox (and spam folder)."
+            : $"Test email failed: {log.Error}";
+        return RedirectToAction(nameof(Index));
+    }
+
     public async Task<IActionResult> Details(int id)
     {
         var email = await _db.EmailLogs.FindAsync(id);

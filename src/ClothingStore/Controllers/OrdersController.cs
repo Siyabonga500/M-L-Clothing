@@ -3,6 +3,7 @@ using ClothingStore.Data;
 using ClothingStore.Filters;
 using ClothingStore.Models;
 using ClothingStore.Services;
+using ClothingStore.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,13 +24,15 @@ public class OrdersController : Controller
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(OrderHistoryFilter filter)
     {
+        if (filter.From > filter.To) (filter.From, filter.To) = (filter.To, filter.From);
         var orders = await _db.Orders.Include(o => o.Items)
             .Where(o => o.UserId == UserId && o.Status != OrderStatus.PendingPayment)
-            .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
-        return View(orders);
+        ViewData["Filter"] = filter;
+        ViewData["TotalOrders"] = orders.Count;
+        return View(filter.Apply(orders).ToList());
     }
 
     public async Task<IActionResult> Details(int id)
