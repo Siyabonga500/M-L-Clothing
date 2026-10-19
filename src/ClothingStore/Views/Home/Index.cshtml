@@ -1,11 +1,23 @@
 @model HomeViewModel
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
 @{
     ViewData["Title"] = "Shop";
     var store = StoreOptions.Value;
     var onSale = Model.Products.Count(p => p.IsOnSale);
+
+    // Banner picture: accept "/wwwroot/img/x.jpg" or "img/x.jpg" as well as "/img/x.jpg", and fall back to the
+    // built-in illustration if a local picture doesn't exist (e.g. a typo in the file name).
+    var heroUrl = (store.HeroImageUrl ?? "").Trim().Replace('\\', '/');
+    if (heroUrl.StartsWith("~/")) heroUrl = heroUrl[1..];
+    if (heroUrl.StartsWith("/wwwroot/", StringComparison.OrdinalIgnoreCase)) heroUrl = heroUrl["/wwwroot".Length..];
+    else if (heroUrl.StartsWith("wwwroot/", StringComparison.OrdinalIgnoreCase)) heroUrl = heroUrl["wwwroot".Length..];
+    var isRemote = heroUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || heroUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    if (!isRemote && heroUrl.Length > 0 && !heroUrl.StartsWith("/")) heroUrl = "/" + heroUrl;
+    if (heroUrl.Length == 0 || (!isRemote && !System.IO.File.Exists(System.IO.Path.Combine(Env.WebRootPath, heroUrl.TrimStart('/')))))
+        heroUrl = "/img/hero-shop.svg";
 }
 
-<section class="photo-hero mb-4" style="--hero-img: url('@store.HeroImageUrl')">
+<section class="photo-hero mb-4" style="--hero-img: url('@heroUrl')">
     <div class="photo-hero-inner">
         <div class="photo-hero-eyebrow">@store.Name · New season</div>
         <h1 class="photo-hero-title">@store.HeroTitle</h1>
