@@ -250,7 +250,7 @@ a, .btn-link { text-decoration: none; }
     font-weight: 600; padding: .2rem .6rem; border-radius: 99px; }
 
 /* ----- Admin top menu bar ----- */
-.admin-nav { background: #24676b; padding-top: .35rem; padding-bottom: .35rem; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.admin-nav { background: #0d3533; padding-top: .35rem; padding-bottom: .35rem; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
 .admin-nav .navbar-brand { color: #fff; font-weight: 700; font-size: 1.15rem; }
 .admin-nav .navbar-brand i { font-size: 1.2rem; }
 .admin-nav .nav-link { color: #fff; font-weight: 500; font-size: .95rem; padding: .4rem .75rem !important; border-radius: 6px; }
