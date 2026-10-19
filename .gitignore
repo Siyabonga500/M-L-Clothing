@@ -490,3 +490,6 @@ $RECYCLE.BIN/
 
 # Product pictures uploaded by the admin
 src/ClothingStore/wwwroot/uploads/
+
+# Private settings (secrets)
+appsettings.Local.json

@@ -66,22 +66,26 @@ From a terminal: `dotnet run --project src\ClothingStore --launch-profile https`
 
 To start from a clean database, stop the app and delete `src/ClothingStore/clothingstore.db`.
 
-## Settings (Manage User Secrets)
+## Settings (Stripe key and email)
 
-Right-click the **ClothingStore** project → **Manage User Secrets** and add what you need. Secrets stay on your PC.
+Put your private settings in **`src/ClothingStore/appsettings.Local.json`**. Git ignores this file, so your keys
+never get pushed to GitHub. Copy `appsettings.Local.example.json`, rename it to `appsettings.Local.json` and fill it in:
 
 ```json
 {
-  "Stripe:SecretKey": "sk_test_...",
-
-  "Email:SmtpHost": "smtp.gmail.com",
-  "Email:SmtpPort": 587,
-  "Email:EnableSsl": true,
-  "Email:Username": "you@gmail.com",
-  "Email:Password": "your 16-letter Gmail app password",
-  "Email:FromEmail": "you@gmail.com"
+  "Stripe": { "SecretKey": "sk_test_..." },
+  "Email": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "EnableSsl": true,
+    "Username": "you@gmail.com",
+    "Password": "your 16-letter Gmail app password",
+    "FromEmail": "you@gmail.com"
+  }
 }
 ```
+
+Anything in this file overrides `appsettings.json`. Restart the app after changing it.
 
 - **Stripe**: test card `4242 4242 4242 4242`, any future date, any CVC.
 - **Email**: for Gmail, turn on 2-Step Verification, then create an **App password** at

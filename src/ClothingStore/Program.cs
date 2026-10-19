@@ -14,6 +14,10 @@ CultureInfo.DefaultThreadCurrentUICulture = appCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Private settings (Stripe key, email password) go in appsettings.Local.json.
+// That file is ignored by git, so the secrets never get pushed to GitHub.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
                       ?? "Data Source=clothingstore.db"));

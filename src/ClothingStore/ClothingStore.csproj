@@ -17,4 +17,9 @@
     <PackageReference Include="Stripe.net" Version="47.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.Local.json" CopyToPublishDirectory="PreserveNewest" Condition="Exists('appsettings.Local.json')" />
+    <Content Update="appsettings.Local.example.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
 </Project>
