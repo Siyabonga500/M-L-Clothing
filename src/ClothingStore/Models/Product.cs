@@ -28,10 +28,8 @@ public class Product
     [Required, StringLength(50)]
     public string Category { get; set; } = string.Empty;
 
-    [Display(Name = "Available sizes"), StringLength(100)]
-    public string Sizes { get; set; } = "S,M,L,XL";
-
-    [Range(0, 100000), Display(Name = "Available quantity")]
+    /// <summary>Total of all size quantities. Kept in sync whenever sizes change or stock is sold.</summary>
+    [Display(Name = "Total quantity")]
     public int Stock { get; set; }
 
     [Display(Name = "Visible in shop")]
@@ -41,8 +39,16 @@ public class Product
 
     public List<ProductImage> Images { get; set; } = new();
 
-    public IEnumerable<string> SizeList =>
-        Sizes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    /// <summary>Quantity in stock for each size (e.g. S = 5, M = 3, 32 = 2).</summary>
+    public List<ProductSize> Sizes { get; set; } = new();
+
+    [NotMapped]
+    public IEnumerable<ProductSize> OrderedSizes => Sizes.OrderBy(s => s.SortOrder).ThenBy(s => s.Id);
+
+    public ProductSize? FindSize(string? size) =>
+        Sizes.FirstOrDefault(s => string.Equals(s.Size, size, StringComparison.OrdinalIgnoreCase));
+
+    public void RecalculateStock() => Stock = Sizes.Sum(s => s.Quantity);
 
     public string? MainImageUrl => Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.Url;
 
@@ -62,6 +68,23 @@ public class ProductImage
 
     [Required, StringLength(500)]
     public string Url { get; set; } = string.Empty;
+
+    public int SortOrder { get; set; }
+}
+
+public class ProductSize
+{
+    public int Id { get; set; }
+
+    public int ProductId { get; set; }
+    public Product? Product { get; set; }
+
+    /// <summary>Size label: letters (S, XL) or numbers (32, 9).</summary>
+    [Required, StringLength(20)]
+    public string Size { get; set; } = string.Empty;
+
+    [Range(0, 100000)]
+    public int Quantity { get; set; }
 
     public int SortOrder { get; set; }
 }

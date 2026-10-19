@@ -49,6 +49,7 @@ public class AdminDashboardViewModel
     public int PendingOrders { get; set; }
     public decimal Revenue { get; set; }
     public List<Order> RecentOrders { get; set; } = new();
+    public List<ProductSize> LowStock { get; set; } = new();
 }
 
 public class AdminUserViewModel

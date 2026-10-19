@@ -10,7 +10,7 @@ public class StripeSettings
 
 public class StoreSettings
 {
-    public string Name { get; set; } = "Siya Clothing";
+    public string Name { get; set; } = "M & L Clothing";
     public string CurrencySymbol { get; set; } = "R";
     public string Address { get; set; } = "277 Monty Naicker Rd, Durban Central, Durban, 4001";
     public double Latitude { get; set; } = -29.8583;
@@ -36,5 +36,5 @@ public class EmailSettings
     public string Username { get; set; } = "";
     public string Password { get; set; } = "";
     public string FromEmail { get; set; } = "";
-    public string FromName { get; set; } = "Siya Clothing";
+    public string FromName { get; set; } = "M & L Clothing";
 }

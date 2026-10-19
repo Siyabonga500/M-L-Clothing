@@ -40,6 +40,9 @@ public class DashboardController : Controller
             OutForDelivery = await _db.Orders.CountAsync(o => o.Status == OrderStatus.OutForDelivery),
             DriverCount = (await _userManager.GetUsersInRoleAsync(Roles.Driver)).Count,
             Revenue = paidTotals.Sum(),
+            LowStock = await _db.ProductSizes.Include(s => s.Product)
+                .Where(s => s.Quantity <= 3 && s.Product!.IsActive)
+                .OrderBy(s => s.Quantity).ThenBy(s => s.Product!.Name).Take(10).ToListAsync(),
             RecentOrders = await _db.Orders.Include(o => o.User)
                 .Where(o => o.Status != OrderStatus.PendingPayment)
                 .OrderByDescending(o => o.CreatedAt).Take(8).ToListAsync()

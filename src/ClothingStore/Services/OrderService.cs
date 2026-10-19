@@ -25,11 +25,14 @@ public class OrderService
         order.StripePaymentIntentId = paymentIntentId;
 
         var productIds = order.Items.Select(i => i.ProductId).ToList();
-        var products = await _db.Products.Where(p => productIds.Contains(p.Id)).ToListAsync();
+        var products = await _db.Products.Include(p => p.Sizes).Where(p => productIds.Contains(p.Id)).ToListAsync();
         foreach (var item in order.Items)
         {
+            // Take the stock from the size that was bought, then update the product total.
             var product = products.First(p => p.Id == item.ProductId);
-            product.Stock = Math.Max(0, product.Stock - item.Quantity);
+            var size = product.FindSize(item.Size);
+            if (size != null) size.Quantity = Math.Max(0, size.Quantity - item.Quantity);
+            product.RecalculateStock();
         }
 
         _db.OrderEvents.Add(new OrderEvent { OrderId = order.Id, Message = order.IsDelivery

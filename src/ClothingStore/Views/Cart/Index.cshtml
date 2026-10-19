@@ -31,7 +31,7 @@ else
                                         <img src="@p.MainImageUrl" class="cart-thumb" alt="" onerror="this.style.visibility='hidden'" />
                                         <div>
                                             <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="fw-semibold text-body">@p.Name</a>
-                                            <div class="small text-muted">Size @item.Size · @p.Stock available</div>
+                                            <div class="small text-muted">Size @item.Size · @(p.FindSize(item.Size)?.Quantity ?? 0) left in this size</div>
                                         </div>
                                     </div>
                                 </td>
@@ -42,7 +42,7 @@ else
                                 <td>
                                     <form asp-action="Update" method="post" class="input-group input-group-sm">
                                         <input type="hidden" name="id" value="@item.Id" />
-                                        <input type="number" name="quantity" value="@item.Quantity" min="0" max="@p.Stock" class="form-control" aria-label="Quantity" />
+                                        <input type="number" name="quantity" value="@item.Quantity" min="0" max="@(p.FindSize(item.Size)?.Quantity ?? 0)" class="form-control" aria-label="Quantity" />
                                         <button class="btn btn-outline-primary" type="submit" title="Update"><i class="bi bi-arrow-repeat"></i></button>
                                     </form>
                                 </td>

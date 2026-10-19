@@ -3,7 +3,16 @@
     ViewData["Title"] = Model.Id == 0 ? "New product" : "Edit product";
     var images = Model.Images.OrderBy(i => i.SortOrder).ToList();
     var slotsLeft = Product.MaxImages - images.Count;
+    var standardSizes = new[] { "XS", "S", "M", "L", "XL", "XXL", "3XL" };
+    var otherSizes = Model.OrderedSizes.Where(x => !standardSizes.Contains(x.Size, StringComparer.OrdinalIgnoreCase)).ToList();
 }
+<template id="otherRowTemplate">
+    <div class="row g-2 mb-2 other-row">
+        <div class="col-6"><input name="sizeName" class="form-control" placeholder="Size, e.g. 32 or XXXL" maxlength="20" /></div>
+        <div class="col-4"><input type="number" name="sizeQty" min="0" class="form-control" placeholder="Quantity" /></div>
+        <div class="col-2"><button type="button" class="btn btn-outline-danger w-100" data-remove-row title="Remove"><i class="bi bi-x-lg"></i></button></div>
+    </div>
+</template>
 <a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All products</a>
 <h1 class="page-title mb-4">@ViewData["Title"]</h1>
 
@@ -43,16 +52,52 @@
                 <div class="eta-box w-100 small" id="saleInfo">Not on sale</div>
             </div>
 
-            <div class="col-12"><div class="section-title mb-0 mt-2">Stock</div></div>
-            <div class="col-md-4">
-                <label asp-for="Stock" class="form-label"></label>
-                <input asp-for="Stock" class="form-control" />
-                <span asp-validation-for="Stock" class="text-danger"></span>
-            </div>
-            <div class="col-md-8">
-                <label asp-for="Sizes" class="form-label"></label>
-                <input asp-for="Sizes" class="form-control" />
-                <div class="form-text">Comma separated, e.g. S,M,L,XL</div>
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="section-title mb-0">Sizes &amp; quantities</div>
+                    <span class="eta-box small py-1">Total: <strong id="sizeTotal">0</strong></span>
+                </div>
+                <div class="form-text mb-2">Tick each size you stock and enter how many you have.</div>
+                <div class="row g-2" id="stdSizes">
+                    @foreach (var std in standardSizes)
+                    {
+                        var existing = Model.FindSize(std);
+                        <div class="col-6 col-md-4 col-xl-3">
+                            <div class="size-row @(existing != null ? "on" : "")">
+                                <label class="form-check mb-0">
+                                    <input type="checkbox" class="form-check-input" data-std-size="@std" @(existing != null ? "checked" : "") />
+                                    <span class="form-check-label fw-semibold">@std</span>
+                                </label>
+                                <input type="hidden" name="sizeName" value="@std" disabled="@(existing == null)" />
+                                <input type="number" name="sizeQty" min="0" class="form-control form-control-sm" placeholder="Qty"
+                                       value="@existing?.Quantity" disabled="@(existing == null)" aria-label="Quantity for @std" />
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <label class="form-check mt-3">
+                    <input type="checkbox" class="form-check-input" id="otherToggle" @(otherSizes.Any() ? "checked" : "") />
+                    <span class="form-check-label fw-semibold">Other sizes (e.g. 32, 9, One Size)</span>
+                </label>
+                <div id="otherSizes" class="mt-2" style="display:@(otherSizes.Any() ? "block" : "none")">
+                    <div id="otherRows">
+                        @foreach (var o in otherSizes)
+                        {
+                            <div class="row g-2 mb-2 other-row">
+                                <div class="col-6"><input name="sizeName" class="form-control" placeholder="Size, e.g. 32 or XXXL" maxlength="20" value="@o.Size" /></div>
+                                <div class="col-4"><input type="number" name="sizeQty" min="0" class="form-control" placeholder="Quantity" value="@o.Quantity" /></div>
+                                <div class="col-2"><button type="button" class="btn btn-outline-danger w-100" data-remove-row title="Remove"><i class="bi bi-x-lg"></i></button></div>
+                            </div>
+                        }
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addOther"><i class="bi bi-plus-lg me-1"></i>Add another size</button>
+                </div>
+                <span class="text-danger small d-block mt-1" asp-validation-for="Sizes"></span>
+                @foreach (var err in ViewData.ModelState["sizes"]?.Errors ?? new())
+                {
+                    <div class="text-danger small">@err.ErrorMessage</div>
+                }
             </div>
 
             <div class="col-12"><div class="section-title mb-0 mt-2">Add pictures (@(slotsLeft) of @Product.MaxImages left)</div></div>
@@ -126,6 +171,40 @@
             } else info.textContent = o > 0 && n >= o ? 'Original must be higher than now price' : 'Not on sale';
         }
         orig.addEventListener('input', updateSale); now.addEventListener('input', updateSale); updateSale();
+
+        // ----- Sizes -----
+        const totalEl = document.getElementById('sizeTotal');
+        function updateTotal() {
+            let t = 0;
+            document.querySelectorAll('input[name="sizeQty"]:not(:disabled)').forEach(i => t += parseInt(i.value || '0', 10) || 0);
+            totalEl.textContent = t;
+        }
+        document.querySelectorAll('[data-std-size]').forEach(cb => cb.addEventListener('change', () => {
+            const row = cb.closest('.size-row');
+            row.classList.toggle('on', cb.checked);
+            row.querySelectorAll('input[name]').forEach(i => i.disabled = !cb.checked);
+            const qty = row.querySelector('input[name="sizeQty"]');
+            if (cb.checked) { if (!qty.value) qty.value = 1; qty.focus(); qty.select(); }
+            updateTotal();
+        }));
+        const otherBox = document.getElementById('otherSizes'), otherRows = document.getElementById('otherRows');
+        function addOtherRow() {
+            otherRows.appendChild(document.getElementById('otherRowTemplate').content.cloneNode(true));
+            otherRows.lastElementChild.querySelector('input').focus();
+        }
+        document.getElementById('otherToggle').addEventListener('change', e => {
+            otherBox.style.display = e.target.checked ? 'block' : 'none';
+            otherRows.querySelectorAll('input').forEach(i => i.disabled = !e.target.checked);
+            if (e.target.checked && !otherRows.children.length) addOtherRow();
+            updateTotal();
+        });
+        document.getElementById('addOther').addEventListener('click', addOtherRow);
+        otherRows.addEventListener('click', e => {
+            const btn = e.target.closest('[data-remove-row]');
+            if (btn) { btn.closest('.other-row').remove(); updateTotal(); }
+        });
+        document.addEventListener('input', e => { if (e.target.name === 'sizeQty') updateTotal(); });
+        updateTotal();
 
         const fileInput = document.getElementById('fileInput');
         if (fileInput) fileInput.addEventListener('change', () => {

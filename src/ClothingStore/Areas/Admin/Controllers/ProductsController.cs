@@ -22,7 +22,7 @@ public class ProductsController : Controller
     }
 
     public async Task<IActionResult> Index() =>
-        View(await _db.Products.Include(p => p.Images).OrderBy(p => p.Category).ThenBy(p => p.Name).ToListAsync());
+        View(await _db.Products.Include(p => p.Images).Include(p => p.Sizes).OrderBy(p => p.Category).ThenBy(p => p.Name).ToListAsync());
 
     [HttpGet]
     public IActionResult Create() => View("Edit", new Product());
@@ -30,13 +30,32 @@ public class ProductsController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var product = await _db.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == id);
         return product == null ? NotFound() : View(product);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Save(Product model, List<IFormFile>? newImages, string? imageUrl)
+    public async Task<IActionResult> Save(Product model, List<IFormFile>? newImages, string? imageUrl,
+        List<string>? sizeName, List<int?>? sizeQty)
     {
+        // Sizes arrive as two parallel lists: ticked standard sizes plus any "other" sizes typed in.
+        var sizes = new List<ProductSize>();
+        sizeName ??= new();
+        sizeQty ??= new();
+        for (var i = 0; i < sizeName.Count; i++)
+        {
+            var name = sizeName[i]?.Trim();
+            var qty = i < sizeQty.Count ? sizeQty[i] : null;
+            if (string.IsNullOrEmpty(name) && qty is null or 0) continue; // empty "other" row
+            if (string.IsNullOrEmpty(name)) { ModelState.AddModelError("sizes", "Every size needs a name, e.g. XXL or 42."); continue; }
+            if (name.Length > 20) { ModelState.AddModelError("sizes", $"Size \"{name}\" is too long (20 characters max)."); continue; }
+            if (qty is null or < 0 or > 100000) { ModelState.AddModelError("sizes", $"Enter a quantity of 0 or more for size {name}."); continue; }
+            if (sizes.Any(x => string.Equals(x.Size, name, StringComparison.OrdinalIgnoreCase)))
+            { ModelState.AddModelError("sizes", $"Size {name} is listed twice."); continue; }
+            sizes.Add(new ProductSize { Size = name, Quantity = qty.Value, SortOrder = sizes.Count });
+        }
+        if (sizes.Count == 0) ModelState.AddModelError("sizes", "Tick at least one size and enter its quantity.");
+
         if (model.OriginalPrice.HasValue && model.OriginalPrice <= model.Price)
             ModelState.AddModelError(nameof(model.OriginalPrice), "The original price must be higher than the now price, or left empty.");
 
@@ -47,7 +66,7 @@ public class ProductsController : Controller
         }
         else
         {
-            product = await _db.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == model.Id)
+            product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == model.Id)
                       ?? throw new InvalidOperationException();
         }
 
@@ -69,6 +88,7 @@ public class ProductsController : Controller
         if (!ModelState.IsValid)
         {
             if (model.Id != 0) model.Images = product.Images;
+            model.Sizes = sizes; // keep what the admin entered
             return View("Edit", model);
         }
 
@@ -79,14 +99,24 @@ public class ProductsController : Controller
             product.Price = model.Price;
             product.OriginalPrice = model.OriginalPrice;
             product.Category = model.Category;
-            product.Sizes = model.Sizes;
-            product.Stock = model.Stock;
             product.IsActive = model.IsActive;
         }
         else
         {
             _db.Products.Add(product);
         }
+
+        // Update sizes in place so existing rows keep their ids; remove sizes that were unticked.
+        foreach (var old in product.Sizes.ToList())
+            if (!sizes.Any(x => string.Equals(x.Size, old.Size, StringComparison.OrdinalIgnoreCase)))
+                product.Sizes.Remove(old);
+        foreach (var size in sizes)
+        {
+            var existingSize = product.FindSize(size.Size);
+            if (existingSize == null) product.Sizes.Add(size);
+            else { existingSize.Size = size.Size; existingSize.Quantity = size.Quantity; existingSize.SortOrder = size.SortOrder; }
+        }
+        product.RecalculateStock();
 
         var order = product.Images.Count == 0 ? 0 : product.Images.Max(i => i.SortOrder) + 1;
         foreach (var f in files)

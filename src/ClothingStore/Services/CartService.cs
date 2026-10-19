@@ -15,6 +15,7 @@ public class CartService
     {
         var items = await _db.CartItems
             .Include(c => c.Product).ThenInclude(p => p!.Images)
+            .Include(c => c.Product).ThenInclude(p => p!.Sizes)
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.AddedAt)
             .ToListAsync();
@@ -26,17 +27,19 @@ public class CartService
 
     public async Task<string?> AddAsync(string userId, int productId, string? size, int quantity)
     {
-        var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == productId && p.IsActive);
+        var product = await _db.Products.Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == productId && p.IsActive);
         if (product == null) return "Product not found.";
         if (quantity < 1) quantity = 1;
 
-        if (string.IsNullOrWhiteSpace(size) || !product.SizeList.Contains(size))
-            size = product.SizeList.FirstOrDefault();
+        var sizeStock = product.FindSize(size) ?? product.OrderedSizes.FirstOrDefault(s => s.Quantity > 0);
+        if (sizeStock == null || sizeStock.Quantity <= 0)
+            return $"Sorry, \"{product.Name}\" is out of stock in size {size}.";
+        size = sizeStock.Size;
 
         var existing = await _db.CartItems.FirstOrDefaultAsync(c =>
             c.UserId == userId && c.ProductId == productId && c.Size == size);
         var newQty = (existing?.Quantity ?? 0) + quantity;
-        if (newQty > product.Stock) return $"Only {product.Stock} of \"{product.Name}\" in stock.";
+        if (newQty > sizeStock.Quantity) return $"Only {sizeStock.Quantity} of \"{product.Name}\" left in size {size}.";
 
         if (existing != null)
             existing.Quantity = newQty;
@@ -49,14 +52,15 @@ public class CartService
 
     public async Task<string?> UpdateQuantityAsync(string userId, int cartItemId, int quantity)
     {
-        var item = await _db.CartItems.Include(c => c.Product)
+        var item = await _db.CartItems.Include(c => c.Product).ThenInclude(p => p!.Sizes)
             .FirstOrDefaultAsync(c => c.Id == cartItemId && c.UserId == userId);
         if (item == null) return "Item not found.";
+        var available = item.Product!.FindSize(item.Size)?.Quantity ?? 0;
 
         if (quantity <= 0)
             _db.CartItems.Remove(item);
-        else if (quantity > item.Product!.Stock)
-            return $"Only {item.Product.Stock} in stock.";
+        else if (quantity > available)
+            return $"Only {available} left in size {item.Size}.";
         else
             item.Quantity = quantity;
 

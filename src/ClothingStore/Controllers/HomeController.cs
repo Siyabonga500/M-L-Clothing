@@ -15,7 +15,7 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(string? category, string? search)
     {
-        var query = _db.Products.Include(p => p.Images).Where(p => p.IsActive);
+        var query = _db.Products.Include(p => p.Images).Include(p => p.Sizes).Where(p => p.IsActive);
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(p => p.Category == category);
         if (!string.IsNullOrWhiteSpace(search))

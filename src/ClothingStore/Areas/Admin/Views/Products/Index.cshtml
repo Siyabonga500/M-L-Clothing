@@ -9,7 +9,7 @@
 <div class="table-card">
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Pictures</th><th>Visible</th><th class="text-end">Actions</th></tr></thead>
+            <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Stock by size</th><th>Pictures</th><th>Visible</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
             @foreach (var p in Model)
             {
@@ -24,7 +24,10 @@
                             <div class="small"><span class="price-was ms-0">@p.OriginalPrice!.Value.ToMoney()</span> <span class="price-save">-@p.SavingPercent%</span></div>
                         }
                     </td>
-                    <td><partial name="_StockPill" model="p" /></td>
+                    <td>
+                        <partial name="_StockPill" model="p" />
+                        <div class="small text-muted mt-1">@string.Join(" · ", p.OrderedSizes.Select(x => $"{x.Size}: {x.Quantity}"))</div>
+                    </td>
                     <td>@p.Images.Count / @Product.MaxImages</td>
                     <td>@(p.IsActive ? "Yes" : "No")</td>
                     <td class="text-end">

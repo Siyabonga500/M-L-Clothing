@@ -12,7 +12,7 @@ public class ProductsController : Controller
 
     public async Task<IActionResult> Details(int id)
     {
-        var product = await _db.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
+        var product = await _db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
         return product == null ? NotFound() : View(product);
     }
 }

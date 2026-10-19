@@ -1,28 +1,7 @@
 @{
+    // The admin menu is the top bar in _Layout (shown for the Admin area).
     Layout = "/Views/Shared/_Layout.cshtml";
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action = ViewContext.RouteData.Values["action"]?.ToString();
-    string Active(string c, string? a = null) => c == controller && (a == null || a == action) ? "active" : "";
 }
 @section Head { @await RenderSectionAsync("Head", required: false) }
-<div class="row g-4">
-    <aside class="col-lg-3 col-xl-2">
-        <nav class="side-menu">
-            <div class="menu-title">Admin</div>
-            <a class="@Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i>Dashboard</a>
-            <a class="@(controller == "Orders" && action != "Scan" ? "active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index"><i class="bi bi-receipt"></i>Orders</a>
-            <a class="@Active("Orders", "Scan")" asp-area="Admin" asp-controller="Orders" asp-action="Scan"><i class="bi bi-qr-code-scan"></i>Scan QR</a>
-            <a class="@Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="bi bi-tags"></i>Products</a>
-            <div class="menu-title">People</div>
-            <a class="@Active("Drivers")" asp-area="Admin" asp-controller="Drivers" asp-action="Index"><i class="bi bi-truck"></i>Drivers</a>
-            <a class="@Active("Users")" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i>All users</a>
-            <div class="menu-title">System</div>
-            <a class="@Active("Emails")" asp-area="Admin" asp-controller="Emails" asp-action="Index"><i class="bi bi-envelope"></i>Emails sent</a>
-            <a asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop"></i>View shop</a>
-        </nav>
-    </aside>
-    <section class="col-lg-9 col-xl-10">
-        @RenderBody()
-    </section>
-</div>
+@RenderBody()
 @section Scripts { @await RenderSectionAsync("Scripts", required: false) }

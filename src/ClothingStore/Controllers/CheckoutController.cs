@@ -84,10 +84,11 @@ public class CheckoutController : Controller
             return RedirectToAction("Index", "Cart");
         }
 
-        var outOfStock = cart.Items.FirstOrDefault(i => i.Quantity > i.Product!.Stock || !i.Product.IsActive);
+        var outOfStock = cart.Items.FirstOrDefault(i =>
+            !i.Product!.IsActive || i.Quantity > (i.Product.FindSize(i.Size)?.Quantity ?? 0));
         if (outOfStock != null)
         {
-            TempData["Error"] = $"\"{outOfStock.Product!.Name}\" is no longer available in that quantity.";
+            TempData["Error"] = $"\"{outOfStock.Product!.Name}\" (size {outOfStock.Size}) is no longer available in that quantity.";
             return RedirectToAction("Index", "Cart");
         }
 
@@ -218,8 +219,9 @@ public class CheckoutController : Controller
             }
             return Ok();
         }
-        catch (StripeException ex)
+        catch (Exception ex) when (ex is StripeException or Newtonsoft.Json.JsonException or NullReferenceException)
         {
+            // Bad signature or a payload that isn't a Stripe event.
             _logger.LogWarning(ex, "Invalid Stripe webhook");
             return BadRequest();
         }

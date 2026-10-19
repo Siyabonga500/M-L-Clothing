@@ -1,4 +1,4 @@
-# Siya Clothing – ASP.NET Core MVC store with Stripe, drivers and QR delivery
+# M & L Clothing – ASP.NET Core MVC store with Stripe, drivers and QR delivery
 
 An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Identity**, **Entity Framework Core (SQLite)**,
 **Stripe Checkout** and **OpenStreetMap** (Leaflet). Store: **277 Monty Naicker Rd, Durban Central, Durban, 4001**.
@@ -7,15 +7,20 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 | --- | --- | --- |
 | ![Shop](docs/screenshots/1-home.png) | ![Checkout](docs/screenshots/3-checkout.png) | ![Order](docs/screenshots/6-customer-order.png) |
 
-| Admin order | Driver delivery | Product on sale |
+| Admin dashboard | Admin order | Driver delivery |
 | --- | --- | --- |
-| ![Admin](docs/screenshots/5-admin-order.png) | ![Driver](docs/screenshots/8-driver-delivery.png) | ![Product](docs/screenshots/10-new-product.png) |
+| ![Dashboard](docs/screenshots/4-admin-dashboard.png) | ![Admin](docs/screenshots/5-admin-order.png) | ![Driver](docs/screenshots/8-driver-delivery.png) |
+
+| Product page (< > pictures, stock per size) | Adding sizes and quantities |
+| --- | --- |
+| ![Product](docs/screenshots/10-new-product.png) | ![Sizes](docs/screenshots/11-product-sizes.png) |
 
 ## Who can do what
 
 **Customers**
-- Browse clothing without logging in: up to 4 pictures per item, sale price with the original price crossed out,
-  **% off and amount saved**, and the **available quantity**.
+- Browse clothing without logging in: up to 4 pictures per item (use the **< >** arrows, keyboard arrows or swipe),
+  sale price with the original price crossed out, **% off and amount saved**, the **total quantity** and
+  **how many are left in each size**. Sold-out sizes can't be chosen.
 - Clicking **Add to cart** while logged out sends you to **Login**; after logging in the item is added.
 - Register with Name, Surname, Email, Gender, Date of birth, Phone, Home address (**pick it on the map**), City, Province,
   Postal code, Password and Confirm password.
@@ -25,12 +30,17 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   estimated arrival time once the driver leaves.
 
 **Admin** (`siya61512@gmail.com` / `Siyabonga@2`, created on first run)
-- Dashboard: revenue, users, drivers, and what needs attention (deliveries waiting for a driver, collections to prepare).
+- Admin pages use a **top menu bar** (Dashboard, Orders, Products, Drivers, Users, Scan QR, Emails).
+- Dashboard: revenue, users, drivers, what needs attention (deliveries waiting for a driver, collections to prepare)
+  and **low stock by size**.
 - **Drivers**: register drivers (only the admin can), edit them, see their active and completed deliveries.
 - **Orders**: assign a driver (accepted automatically), mark collection orders ready, see the QR status
   (**Active / Used / Expired**) and **generate a new QR code**, override status.
 - **Scan QR** to confirm in-store collections.
 - **Products**: original price + now price, **up to 4 pictures** (upload or paste a link), choose the main picture.
+  **Sizes**: tick XS–3XL and enter a quantity for each; tick **Other sizes** to add any size by name or number
+  (e.g. 32, 9, One Size) with its quantity. The product total is the sum of all sizes, and buying a size
+  reduces only that size's stock.
 - **Users**: search, edit, lock, make admin, reset password, delete.
 - **Emails sent**: every email the system sent (or would have sent).
 - Admins (and drivers) have no cart or "My Orders": they don't buy.

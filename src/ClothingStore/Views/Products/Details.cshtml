@@ -18,6 +18,12 @@
             <img id="mainImage" src="@(images.FirstOrDefault()?.Url ?? fallback)" alt="@Model.Name"
                  onerror="this.onerror=null;this.src='@fallback'" />
             @if (Model.IsOnSale) { <span class="sale-badge fs-6">-@Model.SavingPercent%</span> }
+            @if (images.Count > 1)
+            {
+                <button type="button" class="gallery-nav prev" id="prevImage" aria-label="Previous picture"><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="gallery-nav next" id="nextImage" aria-label="Next picture"><i class="bi bi-chevron-right"></i></button>
+                <span class="gallery-count" id="imageCount">1 / @images.Count</span>
+            }
         </div>
         @if (images.Count > 1)
         {
@@ -37,7 +43,18 @@
         <div class="my-3 d-flex align-items-end gap-3 flex-wrap">
             <div class="fs-4"><partial name="_PriceTag" model="Model" /></div>
         </div>
-        <div class="mb-3"><partial name="_StockPill" model="Model" /></div>
+        <div class="mb-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <partial name="_StockPill" model="Model" />
+                <span class="small text-muted">Total in stock: <strong class="text-brand">@Model.Stock</strong></span>
+            </div>
+            <div class="size-chips">
+                @foreach (var sz in Model.OrderedSizes)
+                {
+                    <span class="size-chip @(sz.Quantity <= 0 ? "out" : "")">@sz.Size: <strong>@sz.Quantity</strong></span>
+                }
+            </div>
+        </div>
         <p class="text-muted">@Model.Description</p>
         <div class="surface p-3 p-md-4 my-4">
             <partial name="_AddToCart" model="Model" />
@@ -54,10 +71,34 @@
 </div>
 @section Scripts {
     <script>
-        document.querySelectorAll('.gallery-thumbs button').forEach(b => b.addEventListener('click', () => {
-            document.getElementById('mainImage').src = b.dataset.src;
-            document.querySelectorAll('.gallery-thumbs button').forEach(x => x.classList.remove('active'));
-            b.classList.add('active');
-        }));
+        (function () {
+            const thumbs = [...document.querySelectorAll('.gallery-thumbs button')];
+            if (thumbs.length < 2) return;
+            const main = document.getElementById('mainImage'), count = document.getElementById('imageCount');
+            let current = 0;
+            function show(i) {
+                current = (i + thumbs.length) % thumbs.length;   // wrap around at both ends
+                main.src = thumbs[current].dataset.src;
+                thumbs.forEach((t, n) => t.classList.toggle('active', n === current));
+                count.textContent = `${current + 1} / ${thumbs.length}`;
+            }
+            thumbs.forEach((b, i) => b.addEventListener('click', () => show(i)));
+            document.getElementById('prevImage').addEventListener('click', () => show(current - 1));
+            document.getElementById('nextImage').addEventListener('click', () => show(current + 1));
+            document.addEventListener('keydown', e => {
+                if (e.target.matches('input, select, textarea')) return;
+                if (e.key === 'ArrowLeft') show(current - 1);
+                if (e.key === 'ArrowRight') show(current + 1);
+            });
+            // Swipe on phones
+            let startX = null;
+            main.parentElement.addEventListener('touchstart', e => startX = e.touches[0].clientX, { passive: true });
+            main.parentElement.addEventListener('touchend', e => {
+                if (startX === null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+                startX = null;
+            });
+        })();
     </script>
 }
