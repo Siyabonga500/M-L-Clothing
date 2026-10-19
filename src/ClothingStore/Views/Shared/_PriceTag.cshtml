@@ -1,0 +1,9 @@
+@model Product
+<div>
+    <span class="price-now">@Model.Price.ToMoney()</span>
+    @if (Model.IsOnSale)
+    {
+        <span class="price-was">@Model.OriginalPrice!.Value.ToMoney()</span>
+        <div class="price-save">Save @Model.SavingAmount.ToMoney() (@Model.SavingPercent% off)</div>
+    }
+</div>

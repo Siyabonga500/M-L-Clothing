@@ -1,44 +1,53 @@
 @model Product
-@* Signed-in users post straight to the cart. Visitors are sent to the login page first
-   (the [Authorize] attribute on CartController does the redirect), then the item is added. *@
+@* Customers post straight to the cart. Visitors are sent to the login page first
+   (the [Authorize] attribute on CartController does the redirect), then the item is added.
+   Admins and drivers don't shop, so they see no button. *@
 @{
     var signedIn = SignInManager.IsSignedIn(User);
     var compact = ViewData["Compact"] as bool? ?? false;
 }
-@if (Model.Stock <= 0)
+@if (signedIn && !Roles.IsShopper(User))
+{
+    @* nothing for admins and drivers *@
+}
+else if (Model.Stock <= 0)
 {
     <button class="btn btn-secondary w-100" disabled>Out of stock</button>
 }
-else if (signedIn)
-{
-    <form asp-controller="Cart" asp-action="Add" method="post">
-        <input type="hidden" name="productId" value="@Model.Id" />
-        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-        <div class="input-group">
-            <select name="size" class="form-select" aria-label="Size">
-                @foreach (var s in Model.SizeList) { <option>@s</option> }
-            </select>
-            @if (!compact)
-            {
-                <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control" style="max-width:90px" aria-label="Quantity" />
-            }
-            <button type="submit" class="btn btn-dark"><i class="bi bi-cart-plus"></i> Add to cart</button>
-        </div>
-    </form>
-}
 else
 {
-    <form asp-controller="Cart" asp-action="AddAfterLogin" method="get">
+    <form asp-area="" asp-controller="Cart" asp-action="@(signedIn ? "Add" : "AddAfterLogin")" method="@(signedIn ? "post" : "get")">
         <input type="hidden" name="productId" value="@Model.Id" />
-        <div class="input-group">
-            <select name="size" class="form-select" aria-label="Size">
-                @foreach (var s in Model.SizeList) { <option>@s</option> }
-            </select>
-            @if (!compact)
-            {
-                <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control" style="max-width:90px" aria-label="Quantity" />
-            }
-            <button type="submit" class="btn btn-dark"><i class="bi bi-cart-plus"></i> Add to cart</button>
-        </div>
+        @if (signedIn)
+        {
+            <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+        }
+        @if (compact)
+        {
+            <div class="input-group">
+                <select name="size" class="form-select" aria-label="Size">
+                    @foreach (var s in Model.SizeList) { <option>@s</option> }
+                </select>
+                <button type="submit" class="btn btn-primary" title="Add to cart"><i class="bi bi-bag-plus"></i></button>
+            </div>
+        }
+        else
+        {
+            <div class="row g-2">
+                <div class="col-7">
+                    <label class="form-label small mb-1">Size</label>
+                    <select name="size" class="form-select" aria-label="Size">
+                        @foreach (var s in Model.SizeList) { <option>@s</option> }
+                    </select>
+                </div>
+                <div class="col-5">
+                    <label class="form-label small mb-1">Quantity</label>
+                    <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control" aria-label="Quantity" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-1"><i class="bi bi-bag-plus me-2"></i>Add to cart</button>
+                </div>
+            </div>
+        }
     </form>
 }

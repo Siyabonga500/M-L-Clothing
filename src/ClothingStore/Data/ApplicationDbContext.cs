@@ -12,6 +12,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -27,7 +30,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Order>()
             .HasOne(o => o.User).WithMany().HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<Order>()
+            .HasOne(o => o.Driver).WithMany().HasForeignKey(o => o.DriverId)
+            .OnDelete(DeleteBehavior.SetNull);
         builder.Entity<Order>().HasIndex(o => o.StripeSessionId);
+        builder.Entity<Order>().HasIndex(o => o.QrToken).IsUnique();
+
+        builder.Entity<ProductImage>()
+            .HasOne(i => i.Product).WithMany(p => p.Images).HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<OrderItem>()
             .HasOne(i => i.Product).WithMany().HasForeignKey(i => i.ProductId)

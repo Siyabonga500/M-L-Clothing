@@ -14,7 +14,7 @@ public class CartService
     public async Task<CartViewModel> GetCartAsync(string userId)
     {
         var items = await _db.CartItems
-            .Include(c => c.Product)
+            .Include(c => c.Product).ThenInclude(p => p!.Images)
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.AddedAt)
             .ToListAsync();

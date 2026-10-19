@@ -1,0 +1,12 @@
+@{ var store = StoreOptions.Value; }
+<script src="~/lib/leaflet/leaflet.js"></script>
+<script>
+    window.STORE = {
+        name: @Json.Serialize(store.Name),
+        address: @Json.Serialize(store.Address),
+        lat: @Json.Serialize(store.Latitude),
+        lng: @Json.Serialize(store.Longitude),
+        speedKmh: @Json.Serialize(store.AverageSpeedKmh)
+    };
+</script>
+<script src="~/js/maps.js" asp-append-version="true"></script>

@@ -1,22 +1,130 @@
 @model Order
 @{
     ViewData["Title"] = $"Order #{Model.Id}";
+    var store = StoreOptions.Value;
+    var qr = Model.QrState;
 }
 <a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All orders</a>
-<h1 class="mb-3">Order #@Model.Id <partial name="_OrderStatusBadge" model="Model.Status" /></h1>
+<div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+    <h1 class="page-title mb-0">Order #@Model.Id</h1>
+    <partial name="_OrderStatusBadge" model="Model.Status" />
+</div>
+
 <div class="row g-4">
-    <div class="col-md-8"><partial name="_OrderItems" model="Model" /></div>
-    <div class="col-md-4">
-        <div class="card"><div class="card-body">
-            <h6 class="text-muted">Placed</h6>
-            <p>@Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</p>
+    <div class="col-lg-8">
+        @if (Model.Status == OrderStatus.OutForDelivery)
+        {
+            <div class="surface p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3" style="border-color:var(--accent);background:#fffaf0">
+                <div>
+                    <div class="fw-bold fs-5"><i class="bi bi-truck me-2" style="color:var(--accent)"></i>Your driver is on the way!</div>
+                    <div class="text-muted">
+                        @Model.Driver?.FullName left at @Model.DepartedAt?.ToLocalTime().ToString("HH:mm").
+                        @if (Model.EstimatedMinutes.HasValue && Model.DepartedAt.HasValue)
+                        {
+                            <span>Estimated arrival around <strong>@Model.DepartedAt.Value.ToLocalTime().AddMinutes(Model.EstimatedMinutes.Value).ToString("HH:mm")</strong>.</span>
+                        }
+                    </div>
+                </div>
+                <a asp-action="Track" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-geo-alt me-1"></i>Track live</a>
+            </div>
+        }
+        else if (Model.Status == OrderStatus.DriverAssigned && Model.DeliveryWindowEnd.HasValue)
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-calendar-check me-1"></i>
+                Your order will be delivered by <strong>@Model.DeliveryWindowEnd.Value.ToLocalTime().ToString("dddd, d MMMM")</strong>.
+                Please make sure you're available at your delivery address until then.
+            </div>
+        }
+
+        <div class="table-card mb-4"><partial name="_OrderItems" model="Model" /></div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="surface p-4 h-100">
+                    <div class="section-title"><i class="bi @(Model.IsDelivery ? "bi-truck" : "bi-shop") me-2"></i>@(Model.IsDelivery ? "Delivery" : "Collection")</div>
+                    @if (Model.IsDelivery)
+                    {
+                        <p class="mb-1 fw-semibold">@Model.RecipientName</p>
+                        <p class="mb-1">@Model.ShippingAddress</p>
+                        <p class="small text-muted mb-2">@Model.Phone</p>
+                        @if (Model.DistanceKm.HasValue)
+                        {
+                            <div class="eta-box small"><i class="bi bi-signpost-split me-1"></i>@Model.DistanceKm km from our store · about @Model.EstimatedMinutes min drive</div>
+                        }
+                        @if (Model.Driver != null)
+                        {
+                            <p class="small mt-3 mb-0"><strong>Driver:</strong> @Model.Driver.FullName @(string.IsNullOrEmpty(Model.Driver.VehicleDescription) ? "" : $"· {Model.Driver.VehicleDescription}")</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="mb-1 fw-semibold">@store.Name</p>
+                        <p class="mb-1">@store.Address</p>
+                        <p class="small text-muted mb-0">@store.CollectionHours</p>
+                    }
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="surface p-4 h-100">
+                    <div class="section-title"><i class="bi bi-clock-history me-2"></i>Progress</div>
+                    <ul class="timeline">
+                        @foreach (var e in Model.Events)
+                        {
+                            <li><div>@e.Message</div><div class="when">@e.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</div></li>
+                        }
+                        <li><div>Order placed</div><div class="when">@Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        @if (qr == QrState.Active)
+        {
+            <div class="qr-card mb-3">
+                <div class="fw-bold fs-5 mb-1"><i class="bi bi-qr-code me-1"></i>Your @(Model.IsDelivery ? "delivery" : "collection") QR code</div>
+                <div class="small opacity-75 mb-3">
+                    @(Model.IsDelivery ? "Show this to your driver when they arrive. They'll scan it to confirm delivery." : "Show this at the store counter to collect your order.")
+                </div>
+                <img src="@Url.Action("Qr", new { id = Model.Id })" alt="QR code for order @Model.Id" />
+                <div class="small mt-3 opacity-75">Valid until @Model.QrExpiresAt!.Value.ToLocalTime().ToString("ddd d MMM, HH:mm")</div>
+                <div class="small mt-1" style="color:var(--accent)"><i class="bi bi-shield-lock me-1"></i>Don't share this code with anyone else.</div>
+            </div>
+        }
+        else if (qr == QrState.Used)
+        {
+            <div class="surface p-4 text-center mb-3">
+                <i class="bi bi-patch-check-fill fs-1 text-brand"></i>
+                <div class="fw-bold mt-2">@(Model.IsDelivery ? "Delivered" : "Collected")</div>
+                <div class="small text-muted">QR code scanned on @Model.QrUsedAt!.Value.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</div>
+            </div>
+        }
+        else if (qr == QrState.Expired)
+        {
+            <div class="surface p-4 text-center mb-3">
+                <i class="bi bi-hourglass-bottom fs-1 text-danger"></i>
+                <div class="fw-bold mt-2">QR code expired</div>
+                <div class="small text-muted">Please contact the store to get a new one.</div>
+            </div>
+        }
+        else if (Model.IsPaid && !Model.IsCompleted)
+        {
+            <div class="surface p-4 text-center mb-3">
+                <i class="bi bi-qr-code fs-1 text-muted"></i>
+                <div class="small text-muted mt-2">
+                    @(Model.IsDelivery ? "Your QR code will appear here once a driver is assigned." : "Your QR code will appear here when your order is ready to collect.")
+                </div>
+            </div>
+        }
+        <div class="surface p-4">
+            <div class="d-flex justify-content-between small"><span class="text-muted">Placed</span><span>@Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span></div>
             @if (Model.PaidAt.HasValue)
             {
-                <h6 class="text-muted">Paid</h6>
-                <p>@Model.PaidAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")</p>
+                <div class="d-flex justify-content-between small mt-1"><span class="text-muted">Paid</span><span>@Model.PaidAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span></div>
             }
-            <h6 class="text-muted">Deliver to</h6>
-            <p class="mb-0">@Model.RecipientName<br />@Model.ShippingAddress<br />@Model.Phone</p>
-        </div></div>
+            <div class="d-flex justify-content-between fw-bold mt-2"><span>Total</span><span class="text-brand">@Model.Total.ToMoney()</span></div>
+        </div>
     </div>
 </div>

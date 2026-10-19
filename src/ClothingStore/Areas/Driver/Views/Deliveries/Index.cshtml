@@ -1,0 +1,59 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "My deliveries";
+    var active = Model.Where(o => o.Status is OrderStatus.DriverAssigned or OrderStatus.OutForDelivery).ToList();
+    var done = Model.Where(o => o.Status == OrderStatus.Delivered).ToList();
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <h1 class="page-title mb-0">My deliveries</h1>
+    <a asp-action="Scan" class="btn btn-primary"><i class="bi bi-qr-code-scan me-1"></i>Scan customer QR</a>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat highlight"><div class="icon"><i class="bi bi-truck"></i></div><div class="label">Active</div><div class="value">@active.Count</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat"><div class="icon"><i class="bi bi-signpost-2"></i></div><div class="label">On the road</div><div class="value">@active.Count(o => o.Status == OrderStatus.OutForDelivery)</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat"><div class="icon"><i class="bi bi-patch-check"></i></div><div class="label">Delivered</div><div class="value">@done.Count</div></div></div>
+</div>
+
+<div class="section-title">Assigned to me</div>
+@if (!active.Any())
+{
+    <div class="empty-state surface mb-4"><i class="bi bi-cup-hot"></i><p class="lead mt-3 mb-0">No deliveries right now.</p></div>
+}
+<div class="row g-3 mb-5">
+    @foreach (var o in active)
+    {
+        <div class="col-md-6">
+            <a asp-action="Details" asp-route-id="@o.Id" class="surface p-3 d-block text-body h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="fw-bold fs-5">Order #@o.Id</div>
+                    <partial name="_OrderStatusBadge" model="o.Status" />
+                </div>
+                <div class="mt-2"><i class="bi bi-person me-1 text-brand"></i>@o.RecipientName · @o.Phone</div>
+                <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>@o.ShippingAddress</div>
+                <div class="d-flex justify-content-between small mt-2">
+                    <span><i class="bi bi-signpost-split me-1"></i>@o.DistanceKm km · ~@o.EstimatedMinutes min</span>
+                    @if (o.DeliveryWindowEnd.HasValue)
+                    {
+                        <span class="fw-semibold">Deliver by @o.DeliveryWindowEnd.Value.ToLocalTime().ToString("ddd d MMM")</span>
+                    }
+                </div>
+            </a>
+        </div>
+    }
+</div>
+
+@if (done.Any())
+{
+    <div class="section-title">Completed</div>
+    <div class="table-card">
+        <table class="table align-middle">
+            <thead><tr><th>Order</th><th>Customer</th><th>Delivered</th></tr></thead>
+            <tbody>
+            @foreach (var o in done)
+            {
+                <tr><td><a asp-action="Details" asp-route-id="@o.Id">#@o.Id</a></td><td>@o.RecipientName</td><td>@o.CompletedAt?.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

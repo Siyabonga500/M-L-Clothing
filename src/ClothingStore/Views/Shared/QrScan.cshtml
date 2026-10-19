@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Scan QR code";
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="mx-auto" style="max-width:560px">
+    <h1 class="page-title mb-2"><i class="bi bi-qr-code-scan me-2"></i>Scan QR code</h1>
+    <p class="text-muted">@(isAdmin ? "Scan the customer's QR code to confirm a collection (or a delivery)." : "Ask the customer to show their QR code and point your camera at it.")</p>
+    <div class="surface p-3">
+        <div id="reader" class="rounded-3 overflow-hidden bg-tint" style="min-height:260px"></div>
+        <div id="scanMsg" class="small text-muted mt-2">Starting camera…</div>
+    </div>
+    <div class="surface p-3 mt-3">
+        <form method="get" asp-area="" asp-controller="Scan" asp-action="Index" class="d-flex gap-2">
+            <input name="token" class="form-control" placeholder="Or type the code from the QR link" required />
+            <button class="btn btn-primary">Check</button>
+        </form>
+    </div>
+    <p class="small text-muted mt-3"><i class="bi bi-phone me-1"></i>Tip: your phone's normal camera app works too. It opens the confirm page straight from the QR code.</p>
+</div>
+@section Scripts {
+    <script src="~/lib/html5-qrcode/html5-qrcode.min.js"></script>
+    <script>
+        const msg = document.getElementById('scanMsg');
+        function tokenFrom(text) {
+            try { const u = new URL(text); return u.searchParams.get('token'); } catch { return /^[a-f0-9]{32}$/i.test(text.trim()) ? text.trim() : null; }
+        }
+        if (!window.Html5Qrcode) {
+            msg.textContent = 'Camera scanner could not load. Use your phone camera or type the code below.';
+        } else {
+            const scanner = new Html5Qrcode('reader');
+            scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 230 }, text => {
+                const token = tokenFrom(text);
+                if (!token) { msg.textContent = 'That QR code is not from this store.'; return; }
+                scanner.stop().finally(() => location.href = '@Url.Action("Index", "Scan", new { area = "" })?token=' + encodeURIComponent(token));
+            }).then(() => msg.textContent = 'Point the camera at the QR code.')
+              .catch(() => msg.textContent = 'Camera not available. Allow camera access (the site must use https), or type the code below.');
+        }
+    </script>
+}

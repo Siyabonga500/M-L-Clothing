@@ -1,50 +1,148 @@
 @model Product
 @{
     ViewData["Title"] = Model.Id == 0 ? "New product" : "Edit product";
+    var images = Model.Images.OrderBy(i => i.SortOrder).ToList();
+    var slotsLeft = Product.MaxImages - images.Count;
 }
 <a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> All products</a>
-<h1 class="h3 mb-3">@ViewData["Title"]</h1>
-<form asp-action="Save" method="post" class="row g-3">
-    <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
-    <div class="col-md-8">
-        <label asp-for="Name" class="form-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+<h1 class="page-title mb-4">@ViewData["Title"]</h1>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <form asp-action="Save" method="post" enctype="multipart/form-data" class="surface p-4 row g-3 mx-0">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="All" class="text-danger col-12"></div>
+            <div class="col-md-8">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Category" class="form-label"></label>
+                <input asp-for="Category" class="form-control" list="categories" />
+                <datalist id="categories"><option>Men</option><option>Women</option><option>Unisex</option><option>Kids</option><option>Shoes</option><option>Accessories</option></datalist>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="col-12"><div class="section-title mb-0 mt-2">Pricing</div></div>
+            <div class="col-md-4">
+                <label asp-for="OriginalPrice" class="form-label">Original price (R)</label>
+                <input asp-for="OriginalPrice" class="form-control" step="0.01" id="origPrice" placeholder="Leave empty if not on sale" />
+                <span asp-validation-for="OriginalPrice" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Price" class="form-label">Now price (R)</label>
+                <input asp-for="Price" class="form-control" step="0.01" id="nowPrice" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="eta-box w-100 small" id="saleInfo">Not on sale</div>
+            </div>
+
+            <div class="col-12"><div class="section-title mb-0 mt-2">Stock</div></div>
+            <div class="col-md-4">
+                <label asp-for="Stock" class="form-label"></label>
+                <input asp-for="Stock" class="form-control" />
+                <span asp-validation-for="Stock" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Sizes" class="form-label"></label>
+                <input asp-for="Sizes" class="form-control" />
+                <div class="form-text">Comma separated, e.g. S,M,L,XL</div>
+            </div>
+
+            <div class="col-12"><div class="section-title mb-0 mt-2">Add pictures (@(slotsLeft) of @Product.MaxImages left)</div></div>
+            @if (slotsLeft > 0)
+            {
+                <div class="col-12">
+                    <label class="form-label">Upload from your computer</label>
+                    <input type="file" name="newImages" class="form-control" accept="image/*" multiple id="fileInput" />
+                    <div class="form-text">JPG, PNG, WEBP or GIF, up to 5 MB each. You can pick several at once.</div>
+                    <div class="d-flex gap-2 mt-2" id="preview"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">…or paste a picture link</label>
+                    <input type="url" name="imageUrl" class="form-control" placeholder="https://…" />
+                </div>
+            }
+            else
+            {
+                <div class="col-12"><div class="alert alert-info small mb-0">This product has the maximum of @Product.MaxImages pictures. Remove one to add another.</div></div>
+            }
+
+            <div class="col-12 form-check ms-2 mt-3">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+            <div class="col-12"><button type="submit" class="btn btn-primary btn-lg">Save product</button></div>
+        </form>
     </div>
-    <div class="col-md-4">
-        <label asp-for="Category" class="form-label"></label>
-        <input asp-for="Category" class="form-control" list="categories" />
-        <datalist id="categories"><option>Men</option><option>Women</option><option>Unisex</option><option>Kids</option><option>Shoes</option><option>Accessories</option></datalist>
-        <span asp-validation-for="Category" class="text-danger"></span>
+
+    <div class="col-xl-5">
+        <div class="surface p-4">
+            <div class="section-title">Pictures</div>
+            @if (!images.Any())
+            {
+                <p class="text-muted small mb-0">No pictures yet. Add up to @Product.MaxImages using the form.</p>
+            }
+            <div class="row g-3">
+                @foreach (var img in images)
+                {
+                    <div class="col-6">
+                        <div class="position-relative rounded-3 overflow-hidden bg-tint" style="aspect-ratio:4/5">
+                            <img src="@img.Url" class="w-100 h-100" style="object-fit:cover" alt="" onerror="this.style.visibility='hidden'" />
+                            @if (img == images.First()) { <span class="sale-badge" style="background:var(--brand)">Main</span> }
+                        </div>
+                        <div class="d-flex gap-1 mt-1">
+                            @if (img != images.First())
+                            {
+                                <form asp-action="MakeMainImage" asp-route-id="@img.Id" method="post" class="flex-grow-1">
+                                    <button class="btn btn-sm btn-outline-primary w-100">Make main</button>
+                                </form>
+                            }
+                            <form asp-action="DeleteImage" asp-route-id="@img.Id" method="post" class="@(img == images.First() ? "flex-grow-1" : "")" onsubmit="return confirm('Remove this picture?');">
+                                <button class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
-    <div class="col-12">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="Price" class="form-label"></label>
-        <input asp-for="Price" class="form-control" step="0.01" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="Stock" class="form-label"></label>
-        <input asp-for="Stock" class="form-control" />
-        <span asp-validation-for="Stock" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="Sizes" class="form-label"></label>
-        <input asp-for="Sizes" class="form-control" />
-        <div class="form-text">Comma separated, e.g. S,M,L,XL</div>
-    </div>
-    <div class="col-12">
-        <label asp-for="ImageUrl" class="form-label"></label>
-        <input asp-for="ImageUrl" class="form-control" />
-    </div>
-    <div class="col-12 form-check ms-2">
-        <input asp-for="IsActive" class="form-check-input" />
-        <label asp-for="IsActive" class="form-check-label"></label>
-    </div>
-    <div class="col-12"><button type="submit" class="btn btn-dark">Save product</button></div>
-</form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const orig = document.getElementById('origPrice'), now = document.getElementById('nowPrice'), info = document.getElementById('saleInfo');
+        function updateSale() {
+            const o = parseFloat(orig.value), n = parseFloat(now.value);
+            if (o > 0 && n > 0 && o > n) {
+                const save = o - n, pct = Math.round(save / o * 100);
+                info.innerHTML = `<span class="price-save">-${pct}% · save R ${save.toFixed(2)}</span>`;
+            } else info.textContent = o > 0 && n >= o ? 'Original must be higher than now price' : 'Not on sale';
+        }
+        orig.addEventListener('input', updateSale); now.addEventListener('input', updateSale); updateSale();
+
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.addEventListener('change', () => {
+            const max = @slotsLeft;
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            if (fileInput.files.length > max) {
+                alert(`You can add ${max} more picture(s).`);
+                fileInput.value = '';
+                return;
+            }
+            [...fileInput.files].forEach(f => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(f);
+                img.className = 'cart-thumb';
+                preview.appendChild(img);
+            });
+        });
+    </script>
+}

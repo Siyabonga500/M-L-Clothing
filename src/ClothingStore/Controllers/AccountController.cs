@@ -43,7 +43,9 @@ public class AccountController : Controller
             HomeAddress = model.HomeAddress,
             City = model.City,
             Province = model.Province,
-            PostalCode = model.PostalCode
+            PostalCode = model.PostalCode,
+            HomeLatitude = model.HomeLatitude,
+            HomeLongitude = model.HomeLongitude
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -82,6 +84,8 @@ public class AccountController : Controller
                 if (Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
                 if (await _userManager.IsInRoleAsync(user, Roles.Admin))
                     return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                if (await _userManager.IsInRoleAsync(user, Roles.Driver))
+                    return RedirectToAction("Index", "Deliveries", new { area = "Driver" });
                 return RedirectToAction("Index", "Home");
             }
             if (result.IsLockedOut)
@@ -118,7 +122,11 @@ public class AccountController : Controller
             HomeAddress = user.HomeAddress,
             City = user.City,
             Province = user.Province,
-            PostalCode = user.PostalCode
+            PostalCode = user.PostalCode,
+            HomeLatitude = user.HomeLatitude,
+            HomeLongitude = user.HomeLongitude,
+            VehicleDescription = user.VehicleDescription,
+            VehicleRegistration = user.VehicleRegistration
         });
     }
 
@@ -139,6 +147,8 @@ public class AccountController : Controller
         user.City = model.City;
         user.Province = model.Province;
         user.PostalCode = model.PostalCode;
+        user.HomeLatitude = model.HomeLatitude;
+        user.HomeLongitude = model.HomeLongitude;
         await _userManager.UpdateAsync(user);
 
         TempData["Success"] = "Profile updated.";

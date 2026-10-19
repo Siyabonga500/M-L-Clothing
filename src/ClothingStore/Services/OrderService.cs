@@ -32,6 +32,10 @@ public class OrderService
             product.Stock = Math.Max(0, product.Stock - item.Quantity);
         }
 
+        _db.OrderEvents.Add(new OrderEvent { OrderId = order.Id, Message = order.IsDelivery
+            ? "Payment received. We'll assign a driver shortly."
+            : "Payment received. We'll let you know when your order is ready to collect." });
+
         var cart = _db.CartItems.Where(c => c.UserId == order.UserId);
         _db.CartItems.RemoveRange(cart);
 

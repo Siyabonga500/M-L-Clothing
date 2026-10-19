@@ -2,33 +2,60 @@
 @{
     ViewData["Title"] = "Admin dashboard";
 }
-<h1 class="h3 mb-4">Dashboard</h1>
+<h1 class="page-title mb-4">Dashboard</h1>
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
-        <div class="text-muted">Revenue</div><div class="display-6">@Model.Revenue.ToMoney()</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
-        <div class="text-muted">Orders</div><div class="display-6">@Model.OrderCount</div>
-        <small class="text-muted">@Model.PendingOrders to fulfil</small></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
-        <div class="text-muted">Users</div><div class="display-6">@Model.UserCount</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="card stat-card"><div class="card-body">
-        <div class="text-muted">Products</div><div class="display-6">@Model.ProductCount</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat highlight"><div class="icon"><i class="bi bi-cash-stack"></i></div><div class="label">Revenue</div><div class="value">@Model.Revenue.ToMoney()</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat"><div class="icon"><i class="bi bi-receipt"></i></div><div class="label">Orders</div><div class="value">@Model.OrderCount</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat"><div class="icon"><i class="bi bi-people"></i></div><div class="label">Users</div><div class="value">@Model.UserCount</div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="stat"><div class="icon"><i class="bi bi-truck"></i></div><div class="label">Drivers</div><div class="value">@Model.DriverCount</div></div></div>
 </div>
-<h2 class="h5">Recent orders</h2>
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
-        <tbody>
-        @foreach (var o in Model.RecentOrders)
-        {
-            <tr>
-                <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">#@o.Id</a></td>
-                <td>@o.User?.FullName <small class="text-muted">@o.User?.Email</small></td>
-                <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
-                <td>@o.Total.ToMoney()</td>
-                <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
-            </tr>
-        }
-        </tbody>
-    </table>
+
+<div class="section-title">Needs your attention</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <a asp-controller="Orders" asp-action="Index" asp-route-filter="needs-driver" class="stat d-block text-body @(Model.NeedsDriver > 0 ? "alert-stat" : "")">
+            <div class="icon"><i class="bi bi-person-plus"></i></div>
+            <div class="label">Deliveries waiting for a driver</div>
+            <div class="value">@Model.NeedsDriver</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-controller="Orders" asp-action="Index" asp-route-status="Paid" class="stat d-block text-body @(Model.ReadyToPrepare > 0 ? "alert-stat" : "")">
+            <div class="icon"><i class="bi bi-bag-check"></i></div>
+            <div class="label">Collections to prepare</div>
+            <div class="value">@Model.ReadyToPrepare</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-controller="Orders" asp-action="Index" asp-route-status="OutForDelivery" class="stat d-block text-body">
+            <div class="icon"><i class="bi bi-signpost-2"></i></div>
+            <div class="label">Out for delivery now</div>
+            <div class="value">@Model.OutForDelivery</div>
+        </a>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="section-title mb-0">Recent orders</div>
+    <a asp-controller="Orders" asp-action="Index" class="small fw-semibold">View all</a>
+</div>
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>#</th><th>Customer</th><th>Type</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.RecentOrders)
+            {
+                <tr>
+                    <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id" class="fw-semibold">#@o.Id</a></td>
+                    <td>@o.User?.FullName<div class="small text-muted">@o.User?.Email</div></td>
+                    <td><i class="bi @(o.IsDelivery ? "bi-truck" : "bi-shop") me-1"></i>@(o.IsDelivery ? "Delivery" : "Collection")</td>
+                    <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")</td>
+                    <td>@o.Total.ToMoney()</td>
+                    <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>

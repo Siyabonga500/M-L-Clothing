@@ -1,12 +1,12 @@
 @model Order
 <div class="table-responsive">
-    <table class="table">
+    <table class="table align-middle">
         <thead><tr><th>Product</th><th>Size</th><th>Price</th><th>Qty</th><th class="text-end">Total</th></tr></thead>
         <tbody>
         @foreach (var i in Model.Items)
         {
             <tr>
-                <td>@i.ProductName</td>
+                <td class="fw-semibold">@i.ProductName</td>
                 <td>@i.Size</td>
                 <td>@i.UnitPrice.ToMoney()</td>
                 <td>@i.Quantity</td>
@@ -15,7 +15,7 @@
         }
         </tbody>
         <tfoot>
-            <tr class="fw-semibold"><td colspan="4" class="text-end">Total</td><td class="text-end">@Model.Total.ToMoney()</td></tr>
+            <tr class="fw-bold"><td colspan="4" class="text-end">Total</td><td class="text-end text-brand">@Model.Total.ToMoney()</td></tr>
         </tfoot>
     </table>
 </div>

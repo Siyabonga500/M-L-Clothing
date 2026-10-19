@@ -1,27 +1,63 @@
 @model Product
 @{
     ViewData["Title"] = Model.Name;
+    var images = Model.Images.OrderBy(i => i.SortOrder).ToList();
+    var store = StoreOptions.Value;
+    string fallback = "/img/placeholder.svg";
 }
 <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
+    <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Shop</a></li>
         <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-route-category="@Model.Category">@Model.Category</a></li>
         <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
     </ol>
 </nav>
-<div class="row g-4">
+<div class="row g-4 g-lg-5">
     <div class="col-md-6">
-        <img src="@Model.ImageUrl" alt="@Model.Name" class="rounded product-detail-img"
-             onerror="this.src='https://placehold.co/600x600?text=@Uri.EscapeDataString(Model.Name)'" />
+        <div class="gallery-main">
+            <img id="mainImage" src="@(images.FirstOrDefault()?.Url ?? fallback)" alt="@Model.Name"
+                 onerror="this.onerror=null;this.src='@fallback'" />
+            @if (Model.IsOnSale) { <span class="sale-badge fs-6">-@Model.SavingPercent%</span> }
+        </div>
+        @if (images.Count > 1)
+        {
+            <div class="gallery-thumbs">
+                @for (var i = 0; i < images.Count; i++)
+                {
+                    <button type="button" class="@(i == 0 ? "active" : "")" data-src="@images[i].Url" aria-label="Picture @(i + 1)">
+                        <img src="@images[i].Url" alt="" loading="lazy" onerror="this.onerror=null;this.src='@fallback'" />
+                    </button>
+                }
+            </div>
+        }
     </div>
     <div class="col-md-6">
-        <h1>@Model.Name</h1>
-        <p class="fs-3 fw-semibold">@Model.Price.ToMoney()</p>
-        <p>@Model.Description</p>
-        <p class="text-muted">
-            @if (Model.Stock > 0) { <span><i class="bi bi-check-circle text-success"></i> @Model.Stock in stock</span> }
-            else { <span class="text-danger">Out of stock</span> }
-        </p>
-        <partial name="_AddToCart" model="Model" />
+        <span class="text-uppercase small fw-bold text-muted" style="letter-spacing:.1em">@Model.Category</span>
+        <h1 class="page-title mt-1">@Model.Name</h1>
+        <div class="my-3 d-flex align-items-end gap-3 flex-wrap">
+            <div class="fs-4"><partial name="_PriceTag" model="Model" /></div>
+        </div>
+        <div class="mb-3"><partial name="_StockPill" model="Model" /></div>
+        <p class="text-muted">@Model.Description</p>
+        <div class="surface p-3 p-md-4 my-4">
+            <partial name="_AddToCart" model="Model" />
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <p class="small text-muted mb-0 mt-2"><i class="bi bi-info-circle me-1"></i>You'll be asked to log in or create an account first.</p>
+            }
+        </div>
+        <div class="row g-3 small">
+            <div class="col-6"><div class="d-flex gap-2"><i class="bi bi-truck fs-4 text-brand"></i><div><strong>Delivery</strong><br /><span class="text-muted">Within @store.DeliveryDays days in Durban</span></div></div></div>
+            <div class="col-6"><div class="d-flex gap-2"><i class="bi bi-shop fs-4 text-brand"></i><div><strong>Collect free</strong><br /><span class="text-muted">From our Durban Central store</span></div></div></div>
+        </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.querySelectorAll('.gallery-thumbs button').forEach(b => b.addEventListener('click', () => {
+            document.getElementById('mainImage').src = b.dataset.src;
+            document.querySelectorAll('.gallery-thumbs button').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+        }));
+    </script>
+}

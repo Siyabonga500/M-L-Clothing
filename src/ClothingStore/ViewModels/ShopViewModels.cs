@@ -22,11 +22,16 @@ public class CheckoutViewModel
 {
     public CartViewModel Cart { get; set; } = new();
 
+    public FulfilmentMethod Fulfilment { get; set; } = FulfilmentMethod.Delivery;
+
     [Required, StringLength(100), Display(Name = "Recipient name")]
     public string RecipientName { get; set; } = string.Empty;
 
-    [Required, StringLength(300), Display(Name = "Delivery address")]
-    public string ShippingAddress { get; set; } = string.Empty;
+    [StringLength(300), Display(Name = "Delivery address")]
+    public string? ShippingAddress { get; set; }
+
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 
     [Phone, StringLength(30)]
     public string? Phone { get; set; }
@@ -34,6 +39,10 @@ public class CheckoutViewModel
 
 public class AdminDashboardViewModel
 {
+    public int NeedsDriver { get; set; }
+    public int ReadyToPrepare { get; set; }
+    public int OutForDelivery { get; set; }
+    public int DriverCount { get; set; }
     public int UserCount { get; set; }
     public int ProductCount { get; set; }
     public int OrderCount { get; set; }
@@ -48,4 +57,22 @@ public class AdminUserViewModel
     public bool IsAdmin { get; set; }
     public bool IsLocked { get; set; }
     public int OrderCount { get; set; }
+    public bool IsDriver { get; set; }
+    public int ActiveDeliveries { get; set; }
+}
+
+/// <summary>Settings for the shared map address picker partial.</summary>
+public class MapPickerModel
+{
+    public string LatName { get; set; } = "Latitude";
+    public string LngName { get; set; } = "Longitude";
+    public double? Lat { get; set; }
+    public double? Lng { get; set; }
+    /// <summary>Ids of inputs to fill from the picked location (any may be null).</summary>
+    public string? AddressId { get; set; }
+    public string? CityId { get; set; }
+    public string? ProvinceId { get; set; }
+    public string? PostalId { get; set; }
+    /// <summary>Show the store and a live distance/time estimate (checkout).</summary>
+    public bool ShowEta { get; set; }
 }

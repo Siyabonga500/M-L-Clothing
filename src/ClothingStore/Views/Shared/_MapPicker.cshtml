@@ -1,0 +1,25 @@
+@model MapPickerModel
+<div class="map-picker" data-map-picker
+     data-lat-name="@Model.LatName" data-lng-name="@Model.LngName"
+     data-address-id="@Model.AddressId" data-city-id="@Model.CityId"
+     data-province-id="@Model.ProvinceId" data-postal-id="@Model.PostalId"
+     data-show-eta="@(Model.ShowEta ? "true" : "false")">
+    <input type="hidden" name="@Model.LatName" value="@Model.Lat?.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-lat />
+    <input type="hidden" name="@Model.LngName" value="@Model.Lng?.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-lng />
+    <div class="d-flex gap-2 mb-2">
+        <div class="map-search flex-grow-1">
+            <input type="search" class="form-control" placeholder="Search for your street, suburb or town…" data-search autocomplete="off" />
+            <div class="map-results d-none" data-results></div>
+        </div>
+        <button type="button" class="btn btn-outline-primary text-nowrap" data-locate><i class="bi bi-crosshair me-1"></i>My location</button>
+    </div>
+    <div class="map" data-map></div>
+    <div class="d-flex justify-content-between flex-wrap gap-2 mt-2 small">
+        <span class="text-muted"><i class="bi bi-hand-index me-1"></i>Click the map or drag the pin to your exact location.</span>
+        <span class="text-brand fw-semibold" data-picked></span>
+    </div>
+    @if (Model.ShowEta)
+    {
+        <div class="eta-box mt-2 d-none" data-eta></div>
+    }
+</div>

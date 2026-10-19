@@ -3,33 +3,41 @@
     ViewData["Title"] = "Manage products";
 }
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Products</h1>
-    <a asp-action="Create" class="btn btn-dark"><i class="bi bi-plus-lg"></i> New product</a>
+    <h1 class="page-title mb-0">Products</h1>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>New product</a>
 </div>
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Sizes</th><th>Visible</th><th class="text-end">Actions</th></tr></thead>
-        <tbody>
-        @foreach (var p in Model)
-        {
-            <tr class="@(p.IsActive ? "" : "text-muted")">
-                <td><img src="@p.ImageUrl" class="rounded cart-thumb" alt="" /></td>
-                <td>@p.Name</td>
-                <td>@p.Category</td>
-                <td>@p.Price.ToMoney()</td>
-                <td>@if (p.Stock <= 5) { <span class="text-danger fw-semibold">@p.Stock</span> } else { @p.Stock }</td>
-                <td>@p.Sizes</td>
-                <td>@(p.IsActive ? "Yes" : "No")</td>
-                <td class="text-end">
-                    <div class="d-inline-flex gap-1">
-                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" onsubmit="return confirm('Delete this product?');">
-                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Pictures</th><th>Visible</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                <tr class="@(p.IsActive ? "" : "opacity-50")">
+                    <td><img src="@p.MainImageUrl" class="cart-thumb" alt="" onerror="this.style.visibility='hidden'" /></td>
+                    <td class="fw-semibold">@p.Name</td>
+                    <td>@p.Category</td>
+                    <td>
+                        @p.Price.ToMoney()
+                        @if (p.IsOnSale)
+                        {
+                            <div class="small"><span class="price-was ms-0">@p.OriginalPrice!.Value.ToMoney()</span> <span class="price-save">-@p.SavingPercent%</span></div>
+                        }
+                    </td>
+                    <td><partial name="_StockPill" model="p" /></td>
+                    <td>@p.Images.Count / @Product.MaxImages</td>
+                    <td>@(p.IsActive ? "Yes" : "No")</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" onsubmit="return confirm('Delete this product?');">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>

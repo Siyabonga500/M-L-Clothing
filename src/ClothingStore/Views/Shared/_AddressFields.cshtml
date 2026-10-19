@@ -1,9 +1,19 @@
-@* Shared by Register and Profile; both models have the same field names. *@
+@* Shared by Register, Profile and the admin/driver forms; all their models have these field names. *@
 @model dynamic
 @{
     var provinces = new[] { "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", "Limpopo", "Mpumalanga", "North West", "Northern Cape", "Western Cape" };
     string? province = Model.Province;
+    var picker = new MapPickerModel
+    {
+        LatName = "HomeLatitude", LngName = "HomeLongitude",
+        Lat = (double?)Model.HomeLatitude, Lng = (double?)Model.HomeLongitude,
+        AddressId = "HomeAddress", CityId = "City", ProvinceId = "Province", PostalId = "PostalCode"
+    };
 }
+<div class="col-12">
+    <label class="form-label">Find your home on the map</label>
+    <partial name="_MapPicker" model="picker" />
+</div>
 <div class="col-12">
     <label for="HomeAddress" class="form-label">Home address *</label>
     <input name="HomeAddress" id="HomeAddress" value="@Model.HomeAddress" class="form-control" placeholder="Street and house number"

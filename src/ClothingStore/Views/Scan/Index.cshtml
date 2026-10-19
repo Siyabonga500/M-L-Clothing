@@ -1,0 +1,40 @@
+@model Order?
+@{
+    ViewData["Title"] = "Confirm QR code";
+    var token = ViewData["Token"] as string;
+}
+<div class="mx-auto" style="max-width:560px">
+    <h1 class="page-title mb-4"><i class="bi bi-qr-code-scan me-2"></i>Confirm @(Model?.IsDelivery == false ? "collection" : "delivery")</h1>
+    @if (ViewData["Error"] is string error)
+    {
+        <div class="alert alert-danger"><i class="bi bi-x-octagon me-1"></i>@error</div>
+    }
+    @if (Model != null)
+    {
+        var state = Model.QrState;
+        <div class="surface p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="fw-bold fs-5">Order #@Model.Id</div>
+                <partial name="_OrderStatusBadge" model="Model.Status" />
+            </div>
+            <p class="mb-1"><strong>Customer:</strong> @Model.RecipientName</p>
+            <p class="mb-1"><strong>@(Model.IsDelivery ? "Address" : "Collection")</strong>: @Model.ShippingAddress</p>
+            <p class="mb-3"><strong>Items:</strong> @string.Join(", ", Model.Items.Select(i => $"{i.Quantity}× {i.ProductName} ({i.Size})"))</p>
+            @if (state == QrState.Active)
+            {
+                <form asp-action="Confirm" method="post">
+                    <input type="hidden" name="token" value="@token" />
+                    <button class="btn btn-primary btn-lg w-100"><i class="bi bi-check2-circle me-2"></i>Confirm @(Model.IsDelivery ? "delivery" : "collection")</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">
+                    QR code is <strong>@state.ToString().ToLower()</strong>.
+                    @(state == QrState.Expired ? "Ask the admin to issue a new one." : "")
+                </div>
+            }
+        </div>
+    }
+    <a asp-area="@(User.IsInRole(Roles.Admin) ? "Admin" : "Driver")" asp-controller="@(User.IsInRole(Roles.Admin) ? "Orders" : "Deliveries")" asp-action="@(User.IsInRole(Roles.Admin) ? "Scan" : "Scan")" class="btn btn-outline-primary mt-3"><i class="bi bi-camera me-1"></i>Scan another code</a>
+</div>

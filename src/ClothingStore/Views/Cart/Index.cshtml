@@ -1,68 +1,78 @@
 @model CartViewModel
 @{
     ViewData["Title"] = "Your cart";
+    var savings = Model.Items.Sum(i => i.Product!.SavingAmount * i.Quantity);
 }
-<h1 class="mb-4">Your cart</h1>
+<h1 class="page-title mb-4">Your cart</h1>
 
 @if (!Model.Items.Any())
 {
-    <div class="text-center py-5">
-        <i class="bi bi-bag-x display-1 text-muted"></i>
+    <div class="empty-state surface">
+        <i class="bi bi-bag-x"></i>
         <p class="lead mt-3">Your cart is empty.</p>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-dark">Continue shopping</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Start shopping</a>
     </div>
 }
 else
 {
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead><tr><th>Item</th><th>Price</th><th style="width:170px">Qty</th><th class="text-end">Total</th><th></th></tr></thead>
-                    <tbody>
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-3">
-                                    <img src="@item.Product!.ImageUrl" class="rounded cart-thumb" alt="" />
-                                    <div>
-                                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="text-dark">@item.Product.Name</a>
-                                        @if (!string.IsNullOrEmpty(item.Size)) { <div class="small text-muted">Size: @item.Size</div> }
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Item</th><th>Price</th><th style="width:160px">Qty</th><th class="text-end">Total</th><th></th></tr></thead>
+                        <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            var p = item.Product!;
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@p.MainImageUrl" class="cart-thumb" alt="" onerror="this.style.visibility='hidden'" />
+                                        <div>
+                                            <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="fw-semibold text-body">@p.Name</a>
+                                            <div class="small text-muted">Size @item.Size · @p.Stock available</div>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>@item.Product.Price.ToMoney()</td>
-                            <td>
-                                <form asp-action="Update" method="post" class="input-group input-group-sm">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <input type="number" name="quantity" value="@item.Quantity" min="0" max="@item.Product.Stock" class="form-control" aria-label="Quantity" />
-                                    <button class="btn btn-outline-secondary" type="submit">Update</button>
-                                </form>
-                            </td>
-                            <td class="text-end">@((item.Product.Price * item.Quantity).ToMoney())</td>
-                            <td class="text-end">
-                                <form asp-action="Remove" method="post">
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button class="btn btn-sm btn-outline-danger" type="submit" title="Remove"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                                </td>
+                                <td>
+                                    @p.Price.ToMoney()
+                                    @if (p.IsOnSale) { <div class="small price-was ms-0">@p.OriginalPrice!.Value.ToMoney()</div> }
+                                </td>
+                                <td>
+                                    <form asp-action="Update" method="post" class="input-group input-group-sm">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="number" name="quantity" value="@item.Quantity" min="0" max="@p.Stock" class="form-control" aria-label="Quantity" />
+                                        <button class="btn btn-outline-primary" type="submit" title="Update"><i class="bi bi-arrow-repeat"></i></button>
+                                    </form>
+                                </td>
+                                <td class="text-end fw-semibold">@((p.Price * item.Quantity).ToMoney())</td>
+                                <td class="text-end">
+                                    <form asp-action="Remove" method="post">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Remove"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Continue shopping</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-link px-0 mt-2"><i class="bi bi-arrow-left"></i> Continue shopping</a>
         </div>
         <div class="col-lg-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Summary</h5>
-                    <div class="d-flex justify-content-between"><span>Items</span><span>@Model.Count</span></div>
-                    <hr />
-                    <div class="d-flex justify-content-between fs-5 fw-semibold"><span>Total</span><span>@Model.Total.ToMoney()</span></div>
-                    <a asp-controller="Checkout" asp-action="Index" class="btn btn-dark w-100 mt-3">Proceed to checkout</a>
-                </div>
+            <div class="surface p-4">
+                <div class="section-title">Order summary</div>
+                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Items</span><span>@Model.Count</span></div>
+                @if (savings > 0)
+                {
+                    <div class="d-flex justify-content-between mb-2 price-save"><span>You save</span><span>@savings.ToMoney()</span></div>
+                }
+                <hr />
+                <div class="d-flex justify-content-between fs-5 fw-bold"><span>Total</span><span class="text-brand">@Model.Total.ToMoney()</span></div>
+                <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary btn-lg w-100 mt-3">Checkout <i class="bi bi-arrow-right ms-1"></i></a>
+                <p class="small text-muted text-center mt-2 mb-0"><i class="bi bi-lock me-1"></i>Secure payment with Stripe</p>
             </div>
         </div>
     </div>

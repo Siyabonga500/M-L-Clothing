@@ -3,11 +3,16 @@
     ViewData["Title"] = "Create account";
     var returnUrl = ViewData["ReturnUrl"] as string;
 }
+@section Head { <partial name="_LeafletHead" /> }
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-1">Create your account</h1>
+    <div class="col-lg-9">
+        <div class="surface overflow-hidden">
+            <div class="auth-side rounded-0 py-4 px-4 px-md-5">
+                <div class="eyebrow mb-1">Join @StoreOptions.Value.Name</div>
+                <h2 class="h4 mb-0">Create your account to start shopping</h2>
+            </div>
+            <div class="p-4 p-md-5">
+                <h1 class="h3 page-title mb-1">Your details</h1>
                 <p class="text-muted">Already registered? <a asp-action="Login" asp-route-returnUrl="@returnUrl">Log in</a></p>
                 <form asp-action="Register" asp-route-returnUrl="@returnUrl" method="post" class="row g-3">
                     <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
@@ -62,11 +67,11 @@
                         <div><span asp-validation-for="AcceptTerms" class="text-danger"></span></div>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-dark btn-lg w-100">Create account</button>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Create account</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts { <partial name="_ValidationScriptsPartial" /><partial name="_LeafletScripts" /> }

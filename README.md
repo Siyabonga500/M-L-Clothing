@@ -1,105 +1,115 @@
-# Siya Clothing – ASP.NET Core MVC store with Stripe
+# Siya Clothing – ASP.NET Core MVC store with Stripe, drivers and QR delivery
 
-An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Identity**, **Entity Framework Core (SQLite)** and **Stripe Checkout**.
+An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Identity**, **Entity Framework Core (SQLite)**,
+**Stripe Checkout** and **OpenStreetMap** (Leaflet). Store: **277 Monty Naicker Rd, Durban Central, Durban, 4001**.
 
-## Features
+| Shop | Checkout with map | Customer QR |
+| --- | --- | --- |
+| ![Shop](docs/screenshots/1-home.png) | ![Checkout](docs/screenshots/3-checkout.png) | ![Order](docs/screenshots/6-customer-order.png) |
+
+| Admin order | Driver delivery | Product on sale |
+| --- | --- | --- |
+| ![Admin](docs/screenshots/5-admin-order.png) | ![Driver](docs/screenshots/8-driver-delivery.png) | ![Product](docs/screenshots/10-new-product.png) |
+
+## Who can do what
 
 **Customers**
-- Browse clothing on the home page (search + category filter) without logging in.
-- Clicking **Add to cart** while logged out sends you to the **Login** page; after logging in the item is added automatically.
-- Register with Name, Surname, Email, Gender, Date of birth, Phone, Home address, City, Province, Postal code, Password and Confirm password.
-- Cart: change quantity/size, remove items. Stock is checked.
-- Checkout: confirm delivery details, then pay on Stripe's secure hosted page.
-- Payment is verified with Stripe before the order is marked **Paid**; stock is reduced and the cart is emptied.
-- **My Orders**: view order history and details. Edit your profile.
+- Browse clothing without logging in: up to 4 pictures per item, sale price with the original price crossed out,
+  **% off and amount saved**, and the **available quantity**.
+- Clicking **Add to cart** while logged out sends you to **Login**; after logging in the item is added.
+- Register with Name, Surname, Email, Gender, Date of birth, Phone, Home address (**pick it on the map**), City, Province,
+  Postal code, Password and Confirm password.
+- Checkout: choose **Deliver to me** (pick the address on the map; shows distance and estimated drive time from the store)
+  or **Collect in store**. Pay with Stripe.
+- **My Orders**: progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
+  estimated arrival time once the driver leaves.
 
-**Admin** (`/Admin`)
-- Default login: **siya61512@gmail.com** / **Siyabonga@2** (created automatically on first run).
-- Dashboard: revenue, order, user and product counts, recent orders.
-- Users: search, view, edit, lock/unlock, make/remove admin, reset password, delete.
-- Products: create, edit, hide, delete (products with orders are hidden instead of deleted).
-- Orders: filter by status, view details, update status (Paid → Processing → Shipped → Delivered / Cancelled).
+**Admin** (`siya61512@gmail.com` / `Siyabonga@2`, created on first run)
+- Dashboard: revenue, users, drivers, and what needs attention (deliveries waiting for a driver, collections to prepare).
+- **Drivers**: register drivers (only the admin can), edit them, see their active and completed deliveries.
+- **Orders**: assign a driver (accepted automatically), mark collection orders ready, see the QR status
+  (**Active / Used / Expired**) and **generate a new QR code**, override status.
+- **Scan QR** to confirm in-store collections.
+- **Products**: original price + now price, **up to 4 pictures** (upload or paste a link), choose the main picture.
+- **Users**: search, edit, lock, make admin, reset password, delete.
+- **Emails sent**: every email the system sent (or would have sent).
+- Admins (and drivers) have no cart or "My Orders": they don't buy.
+
+**Drivers** (log in with the email/password the admin set)
+- **My Deliveries**: assigned orders, customer phone and address, map and a "Navigate in Google Maps" button.
+- Deliveries are **accepted automatically**. A driver can **reject** one (with a reason) before leaving if they aren't
+  available; the admin is emailed and the order goes back to "needs a driver".
+- **I'm leaving now**: the customer is emailed with the estimated arrival time, and the driver's phone shares its live
+  location while the page is open.
+- **Scan QR** at the door to confirm delivery (or use the phone's normal camera on the code).
+
+## Delivery flow
+
+1. Customer pays → order is **Paid**.
+2. Admin assigns a driver → **Driver assigned** (auto-accepted). The customer is emailed:
+   *"Your order will be delivered within 3 days from today… please make sure you are available between these 3 days"*,
+   with their QR code attached. The QR code is valid for **120 hours (5 days)**.
+3. Driver taps **I'm leaving now** → **Out for delivery**. Customer is emailed the ETA and can track live.
+4. Driver scans the customer's QR code → **Delivered**. A used or expired code can't be scanned again;
+   the admin can issue a new one.
+
+Collection: Paid → admin **Mark ready for collection** (customer emailed a QR) → admin scans it → **Collected**.
 
 ## Run it in Visual Studio 2026
 
-1. Clone the repo: **File → Clone Repository…**, paste the GitHub URL, and choose branch `claude/beautiful-heisenberg-paysqt`.
-   (Or clone it yourself and open `ClothingStore.sln` with **File → Open → Project/Solution**.)
-2. Visual Studio restores the NuGet packages automatically. Wait for it to finish (bottom status bar).
-3. Pick the **https** profile in the green Run button drop-down and press **F5** (or **Ctrl+F5** to run without debugging).
-4. The first time, Visual Studio asks you to trust the ASP.NET Core development certificate. Click **Yes** both times.
-5. The browser opens on the shop. The SQLite database (`clothingstore.db`) is created in the project folder and filled with sample products and the admin account on first start. Nothing else to install: no SQL Server needed.
+1. **File → Clone Repository…**, paste the GitHub URL, branch `claude/beautiful-heisenberg-paysqt`
+   (or **Git → Pull** if you already have it).
+2. Press **Ctrl+F5** (or F5). Trust the development certificate if asked.
+3. The database (`clothingstore.db`) is created/updated automatically on start, with sample products and the admin.
+
+From a terminal: `dotnet run --project src\ClothingStore --launch-profile https`, then open https://localhost:7139.
 
 To start from a clean database, stop the app and delete `src/ClothingStore/clothingstore.db`.
 
-### From the command line
+## Settings (Manage User Secrets)
 
-Requirements: [.NET 10 SDK](https://dotnet.microsoft.com/download) (included with Visual Studio 2026).
+Right-click the **ClothingStore** project → **Manage User Secrets** and add what you need. Secrets stay on your PC.
 
-```bash
-cd src/ClothingStore
-dotnet run
+```json
+{
+  "Stripe:SecretKey": "sk_test_...",
+
+  "Email:SmtpHost": "smtp.gmail.com",
+  "Email:SmtpPort": 587,
+  "Email:EnableSsl": true,
+  "Email:Username": "you@gmail.com",
+  "Email:Password": "your 16-letter Gmail app password",
+  "Email:FromEmail": "you@gmail.com"
+}
 ```
 
-## Stripe setup
+- **Stripe**: test card `4242 4242 4242 4242`, any future date, any CVC.
+- **Email**: for Gmail, turn on 2-Step Verification, then create an **App password** at
+  https://myaccount.google.com/apppasswords and use it as `Email:Password` (not your normal password).
+  Until email is set up, emails are saved under **Admin → Emails sent** so you can still see them.
+- **Store** (in `appsettings.json` → `Store`): name, address, map position (`Latitude`/`Longitude`), collection hours,
+  `DeliveryDays` (3), `QrValidHours` (120) and `AverageSpeedKmh` used for time estimates.
+  The store's map position is approximate. If the pin is off, right-click the exact spot in Google Maps, copy the
+  coordinates and paste them into `Latitude` and `Longitude`.
 
-1. Create a free account at https://dashboard.stripe.com and switch to **Test mode**.
-2. Copy your keys from **Developers → API keys** into `src/ClothingStore/appsettings.json`:
+**Live tracking and the QR camera need https and permission.** Browsers only share location and camera on https pages
+(localhost is fine). Drivers should keep the delivery page open on their phone while driving. To use phones on your
+network, the app must be published to a real https address.
 
-   ```json
-   "Stripe": {
-     "PublishableKey": "pk_test_...",
-     "SecretKey": "sk_test_...",
-     "WebhookSecret": "",
-     "Currency": "zar"
-   }
-   ```
-
-   Better: keep the secret out of source control with user secrets. In Visual Studio, right-click the
-   **ClothingStore** project → **Manage User Secrets**, and paste:
-
-   ```json
-   { "Stripe:SecretKey": "sk_test_..." }
-   ```
-
-   Or from the command line:
-
-   ```bash
-   cd src/ClothingStore
-   dotnet user-secrets init
-   dotnet user-secrets set "Stripe:SecretKey" "sk_test_..."
-   ```
-
-3. Pay with the test card **4242 4242 4242 4242**, any future expiry date, any CVC.
-
-**Optional webhook** (needs the [Stripe CLI](https://docs.stripe.com/stripe-cli)) marks orders paid even if the customer closes the browser before returning. The app runs on https://localhost:7139 by default:
-
-```bash
-stripe listen --forward-to https://localhost:7139/Checkout/Webhook
-```
-
-Put the `whsec_...` value it prints into `Stripe:WebhookSecret`.
-
-## Configuration
-
-| Setting | Purpose |
-| --- | --- |
-| `ConnectionStrings:DefaultConnection` | SQLite file path |
-| `Store:Name`, `Store:CurrencySymbol` | Shop name and price symbol shown on pages |
-| `Stripe:Currency` | Currency sent to Stripe (default `zar`) |
-| `AdminAccount:Email`, `AdminAccount:Password` | Admin account created on first run |
-
-Change the admin password after first login in production (Admin → Users → reset password), and move secrets out of `appsettings.json`.
+**Optional Stripe webhook** (marks orders paid even if the customer closes the browser before returning):
+`stripe listen --forward-to https://localhost:7139/Checkout/Webhook` and put the `whsec_...` value in `Stripe:WebhookSecret`.
 
 ## Project layout
 
 ```
 src/ClothingStore
-├── Areas/Admin          Admin dashboard, users, products, orders
-├── Controllers          Home, Products, Account, Cart, Checkout (Stripe), Orders
+├── Areas/Admin          Dashboard, orders (drivers, QR), products (pictures), drivers, users, emails
+├── Areas/Driver         Driver deliveries: reject, leaving now, live location
+├── Controllers          Home, Products, Account, Cart, Checkout (Stripe), Orders (QR, tracking), Scan
 ├── Data                 DbContext + seed data (roles, admin, sample products)
 ├── Migrations           EF Core migrations
-├── Models               ApplicationUser, Product, CartItem, Order, OrderItem
-├── Services             CartService, OrderService, Stripe settings
-├── ViewModels           Form and page models
-└── Views                Razor views (Bootstrap 5)
+├── Models               User, Product + ProductImage, Cart, Order + OrderEvent, EmailLog
+├── Services             Cart, Order, Delivery (drivers/QR/emails), Email, QR, Geo (distance/ETA)
+├── Views                Razor views (Bootstrap 5.3, brand colours #183630 / #023436)
+└── wwwroot              CSS, maps.js, local copies of Bootstrap, Leaflet, icons and the QR scanner
 ```

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ClothingStore.Data;
+using ClothingStore.Filters;
 using ClothingStore.Models;
 using ClothingStore.Services;
 using ClothingStore.ViewModels;
@@ -13,7 +14,7 @@ using Stripe.Checkout;
 
 namespace ClothingStore.Controllers;
 
-[Authorize]
+[Authorize, ShoppersOnly]
 public class CheckoutController : Controller
 {
     private readonly ApplicationDbContext _db;
@@ -21,16 +22,19 @@ public class CheckoutController : Controller
     private readonly OrderService _orders;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly StripeSettings _stripe;
+    private readonly StoreSettings _store;
     private readonly ILogger<CheckoutController> _logger;
 
     public CheckoutController(ApplicationDbContext db, CartService cart, OrderService orders,
-        UserManager<ApplicationUser> userManager, IOptions<StripeSettings> stripe, ILogger<CheckoutController> logger)
+        UserManager<ApplicationUser> userManager, IOptions<StripeSettings> stripe, IOptions<StoreSettings> store,
+        ILogger<CheckoutController> logger)
     {
         _db = db;
         _cart = cart;
         _orders = orders;
         _userManager = userManager;
         _stripe = stripe.Value;
+        _store = store.Value;
         _logger = logger;
     }
 
@@ -51,6 +55,8 @@ public class CheckoutController : Controller
             Cart = cart,
             RecipientName = user.FullName,
             ShippingAddress = address,
+            Latitude = user.HomeLatitude,
+            Longitude = user.HomeLongitude,
             Phone = user.PhoneNumber
         });
     }
@@ -62,6 +68,14 @@ public class CheckoutController : Controller
         var cart = await _cart.GetCartAsync(UserId);
         model.Cart = cart;
         if (!cart.Items.Any()) return RedirectToAction("Index", "Cart");
+
+        if (model.Fulfilment == FulfilmentMethod.Delivery)
+        {
+            if (string.IsNullOrWhiteSpace(model.ShippingAddress))
+                ModelState.AddModelError(nameof(model.ShippingAddress), "Enter your delivery address.");
+            if (model.Latitude is null or < -90 or > 90 || model.Longitude is null or < -180 or > 180)
+                ModelState.AddModelError(nameof(model.ShippingAddress), "Pick your delivery location on the map.");
+        }
         if (!ModelState.IsValid) return View(model);
 
         if (string.IsNullOrWhiteSpace(_stripe.SecretKey) || _stripe.SecretKey.Contains("REPLACE_ME"))
@@ -81,7 +95,10 @@ public class CheckoutController : Controller
         {
             UserId = UserId,
             RecipientName = model.RecipientName,
-            ShippingAddress = model.ShippingAddress,
+            Fulfilment = model.Fulfilment,
+            ShippingAddress = model.Fulfilment == FulfilmentMethod.Collection
+                ? $"Collect at store: {_store.Address}"
+                : model.ShippingAddress!,
             Phone = model.Phone,
             Total = cart.Total,
             Items = cart.Items.Select(i => new OrderItem
@@ -93,6 +110,15 @@ public class CheckoutController : Controller
                 Quantity = i.Quantity
             }).ToList()
         };
+        if (order.IsDelivery)
+        {
+            order.DeliveryLatitude = model.Latitude;
+            order.DeliveryLongitude = model.Longitude;
+            var (km, minutes) = Geo.Estimate(_store.Latitude, _store.Longitude,
+                model.Latitude!.Value, model.Longitude!.Value, _store.AverageSpeedKmh);
+            order.DistanceKm = km;
+            order.EstimatedMinutes = minutes;
+        }
         _db.Orders.Add(order);
         await _db.SaveChangesAsync();
 

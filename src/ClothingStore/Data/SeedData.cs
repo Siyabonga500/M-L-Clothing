@@ -8,6 +8,11 @@ public static class Roles
 {
     public const string Admin = "Admin";
     public const string Customer = "Customer";
+    public const string Driver = "Driver";
+
+    /// <summary>Admins and drivers don't shop, so they get no cart or "My orders".</summary>
+    public static bool IsShopper(System.Security.Claims.ClaimsPrincipal user) =>
+        user.Identity?.IsAuthenticated == true && !user.IsInRole(Admin) && !user.IsInRole(Driver);
 }
 
 public static class SeedData
@@ -18,7 +23,7 @@ public static class SeedData
         await db.Database.MigrateAsync();
 
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        foreach (var role in new[] { Roles.Admin, Roles.Customer })
+        foreach (var role in new[] { Roles.Admin, Roles.Customer, Roles.Driver })
         {
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole(role));
@@ -61,32 +66,34 @@ public static class SeedData
     {
         if (await db.Products.AnyAsync()) return;
 
-        const string img = "https://images.unsplash.com/";
+        static List<ProductImage> Pics(params string[] ids) =>
+            ids.Select((id, i) => new ProductImage { Url = $"https://images.unsplash.com/{id}?w=800", SortOrder = i }).ToList();
+
         db.Products.AddRange(
-            new Product { Name = "Classic White T-Shirt", Category = "Men", Price = 199.99m, Stock = 50,
+            new Product { Name = "Classic White T-Shirt", Category = "Men", Price = 149.99m, OriginalPrice = 199.99m, Stock = 50,
                 Description = "Soft 100% cotton crew-neck tee. A wardrobe essential.",
-                ImageUrl = img + "photo-1521572163474-6864f9cf17ab?w=600" },
+                Images = Pics("photo-1521572163474-6864f9cf17ab", "photo-1622445275463-afa2ab738c34", "photo-1581655353564-df123a1eb820") },
             new Product { Name = "Denim Jacket", Category = "Men", Price = 899.00m, Stock = 20,
                 Description = "Rugged blue denim jacket with button front and chest pockets.",
-                ImageUrl = img + "photo-1576871337622-98d48d1cf531?w=600" },
-            new Product { Name = "Slim Fit Chinos", Category = "Men", Price = 549.50m, Stock = 35, Sizes = "30,32,34,36",
+                Images = Pics("photo-1576871337622-98d48d1cf531", "photo-1551537482-f2075a1d41f2") },
+            new Product { Name = "Slim Fit Chinos", Category = "Men", Price = 449.50m, OriginalPrice = 549.50m, Stock = 35, Sizes = "30,32,34,36",
                 Description = "Stretch cotton chinos with a modern slim fit.",
-                ImageUrl = img + "photo-1473966968600-fa801b869a1a?w=600" },
-            new Product { Name = "Floral Summer Dress", Category = "Women", Price = 749.00m, Stock = 25, Sizes = "XS,S,M,L",
-                Description = "Lightweight floral dress, perfect for warm days.",
-                ImageUrl = img + "photo-1572804013309-59a88b7e92f1?w=600" },
+                Images = Pics("photo-1473966968600-fa801b869a1a", "photo-1624378439575-d8705ad7ae80") },
+            new Product { Name = "Floral Summer Dress", Category = "Women", Price = 599.00m, OriginalPrice = 749.00m, Stock = 25, Sizes = "XS,S,M,L",
+                Description = "Lightweight floral dress, perfect for warm Durban days.",
+                Images = Pics("photo-1572804013309-59a88b7e92f1", "photo-1595777457583-95e059d581b8", "photo-1585487000160-6ebcfceb0d03", "photo-1496747611176-843222e1e57c") },
             new Product { Name = "Knit Sweater", Category = "Women", Price = 649.99m, Stock = 30,
                 Description = "Cosy oversized knit sweater in a neutral tone.",
-                ImageUrl = img + "photo-1434389677669-e08b4cac3105?w=600" },
+                Images = Pics("photo-1434389677669-e08b4cac3105", "photo-1576566588028-4147f3842f27") },
             new Product { Name = "High-Waist Jeans", Category = "Women", Price = 699.00m, Stock = 40, Sizes = "26,28,30,32",
                 Description = "Flattering high-waist skinny jeans with stretch.",
-                ImageUrl = img + "photo-1541099649105-f69ad21f3246?w=600" },
-            new Product { Name = "Hooded Sweatshirt", Category = "Unisex", Price = 499.00m, Stock = 60,
+                Images = Pics("photo-1541099649105-f69ad21f3246", "photo-1582418702059-97ebafb35d09") },
+            new Product { Name = "Hooded Sweatshirt", Category = "Unisex", Price = 399.00m, OriginalPrice = 499.00m, Stock = 60,
                 Description = "Fleece-lined hoodie with kangaroo pocket.",
-                ImageUrl = img + "photo-1556821840-3a63f95609a7?w=600" },
+                Images = Pics("photo-1556821840-3a63f95609a7", "photo-1509942774463-acf339cf87d5") },
             new Product { Name = "Leather Sneakers", Category = "Shoes", Price = 1199.00m, Stock = 15, Sizes = "6,7,8,9,10,11",
                 Description = "Minimal white leather sneakers for everyday wear.",
-                ImageUrl = img + "photo-1549298916-b41d501d3772?w=600" }
+                Images = Pics("photo-1549298916-b41d501d3772", "photo-1600185365483-26d7a4cc7519") }
         );
         await db.SaveChangesAsync();
     }

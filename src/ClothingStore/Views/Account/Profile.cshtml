@@ -2,13 +2,20 @@
 @{
     ViewData["Title"] = "My profile";
 }
+@section Head { <partial name="_LeafletHead" /> }
 <div class="row justify-content-center">
-    <div class="col-lg-8">
-        <h1 class="h3 mb-3">My profile</h1>
-        <form asp-action="Profile" method="post" class="row g-3">
-            <partial name="_ProfileFields" model="Model" />
-            <div class="col-12"><button type="submit" class="btn btn-dark">Save changes</button></div>
-        </form>
+    <div class="col-lg-9">
+        <h1 class="page-title mb-4">My profile</h1>
+        <div class="surface p-4 p-md-5">
+            <form asp-action="Profile" method="post" class="row g-3">
+                <partial name="_ProfileFields" model="Model" />
+                @if (User.IsInRole(Roles.Driver))
+                {
+                    <div class="col-12"><div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>Vehicle: @Model.VehicleDescription @Model.VehicleRegistration. Ask the admin to change vehicle details.</div></div>
+                }
+                <div class="col-12"><button type="submit" class="btn btn-primary">Save changes</button></div>
+            </form>
+        </div>
     </div>
 </div>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts { <partial name="_ValidationScriptsPartial" /><partial name="_LeafletScripts" /> }

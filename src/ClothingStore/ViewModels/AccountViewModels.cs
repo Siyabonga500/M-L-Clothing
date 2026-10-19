@@ -34,6 +34,9 @@ public class RegisterViewModel
     [StringLength(10), Display(Name = "Postal code")]
     public string? PostalCode { get; set; }
 
+    public double? HomeLatitude { get; set; }
+    public double? HomeLongitude { get; set; }
+
     [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
@@ -97,4 +100,27 @@ public class ProfileViewModel
 
     [StringLength(10), Display(Name = "Postal code")]
     public string? PostalCode { get; set; }
+
+    public double? HomeLatitude { get; set; }
+    public double? HomeLongitude { get; set; }
+
+    // Drivers only
+    [StringLength(100), Display(Name = "Vehicle (make, model, colour)")]
+    public string? VehicleDescription { get; set; }
+
+    [StringLength(20), Display(Name = "Registration number")]
+    public string? VehicleRegistration { get; set; }
+}
+
+public class DriverCreateViewModel : ProfileViewModel
+{
+    [Required, EmailAddress]
+    public new string Email { get; set; } = string.Empty;
+
+    [Required, StringLength(100, MinimumLength = 6), DataType(DataType.Password)]
+    public string Password { get; set; } = string.Empty;
+
+    [Required, DataType(DataType.Password), Display(Name = "Confirm password")]
+    [Compare(nameof(Password), ErrorMessage = "The passwords do not match.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
 }

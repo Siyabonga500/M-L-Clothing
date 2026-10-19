@@ -28,6 +28,7 @@ public class UsersController : Controller
 
         var users = await query.OrderBy(u => u.FirstName).ToListAsync();
         var adminIds = (await _userManager.GetUsersInRoleAsync(Roles.Admin)).Select(u => u.Id).ToHashSet();
+        var driverIds = (await _userManager.GetUsersInRoleAsync(Roles.Driver)).Select(u => u.Id).ToHashSet();
         var orderCounts = await _db.Orders.GroupBy(o => o.UserId)
             .Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count);
 
@@ -36,6 +37,7 @@ public class UsersController : Controller
         {
             User = u,
             IsAdmin = adminIds.Contains(u.Id),
+            IsDriver = driverIds.Contains(u.Id),
             IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow,
             OrderCount = orderCounts.GetValueOrDefault(u.Id)
         }).ToList());
@@ -46,12 +48,13 @@ public class UsersController : Controller
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound();
 
-        ViewData["Orders"] = await _db.Orders.Where(o => o.UserId == id)
+        ViewData["Orders"] = await _db.Orders.Where(o => o.UserId == id || o.DriverId == id)
             .OrderByDescending(o => o.CreatedAt).ToListAsync();
         return View(new AdminUserViewModel
         {
             User = user,
             IsAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin),
+            IsDriver = await _userManager.IsInRoleAsync(user, Roles.Driver),
             IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow
         });
     }

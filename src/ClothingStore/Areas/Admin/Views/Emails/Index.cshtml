@@ -1,0 +1,31 @@
+@model List<EmailLog>
+@{
+    ViewData["Title"] = "Emails sent";
+}
+<h1 class="page-title mb-3">Emails sent</h1>
+@if (!(bool)ViewData["Configured"]!)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        Email sending isn't set up yet, so emails are only saved here. Add your SMTP details (e.g. Gmail) under <code>Email</code> in user secrets or appsettings.json. See the README.
+    </div>
+}
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>When</th><th>To</th><th>Subject</th><th>Status</th></tr></thead>
+            <tbody>
+            @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-4">No emails yet.</td></tr> }
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td class="small">@e.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")</td>
+                    <td>@e.To</td>
+                    <td><a asp-action="Details" asp-route-id="@e.Id">@e.Subject</a></td>
+                    <td>@if (e.Sent) { <span class="status status-paid">Sent</span> } else { <span class="status status-pending" title="@e.Error">Not sent</span> }</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

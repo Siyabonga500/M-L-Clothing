@@ -3,13 +3,13 @@
     ViewData["Title"] = "Manage users";
 }
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Users</h1>
+    <h1 class="page-title mb-0">All users</h1>
     <form method="get" class="d-flex gap-2">
         <input type="search" name="search" value="@ViewData["Search"]" class="form-control" placeholder="Search name or email" />
-        <button class="btn btn-outline-dark">Search</button>
+        <button class="btn btn-outline-primary">Search</button>
     </form>
 </div>
-<div class="table-responsive">
+<div class="table-card"><div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead><tr><th>Name</th><th>Email</th><th>Gender</th><th>Joined</th><th>Orders</th><th>Role</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
         <tbody>
@@ -21,8 +21,8 @@
                 <td>@u.User.Gender</td>
                 <td>@u.User.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
                 <td>@u.OrderCount</td>
-                <td>@if (u.IsAdmin) { <span class="badge bg-warning text-dark">Admin</span> } else { <span class="badge bg-light text-dark">Customer</span> }</td>
-                <td>@if (u.IsLocked) { <span class="badge bg-danger">Locked</span> } else { <span class="badge bg-success">Active</span> }</td>
+                <td>@if (u.IsAdmin) { <span class="role-chip">Admin</span> } else if (u.IsDriver) { <span class="status status-progress">Driver</span> } else { <span class="status status-paid">Customer</span> }</td>
+                <td>@if (u.IsLocked) { <span class="status status-cancel">Locked</span> } else { <span class="status status-paid">Active</span> }</td>
                 <td class="text-end">
                     <partial name="_UserActions" model="u" />
                 </td>
@@ -30,4 +30,4 @@
         }
         </tbody>
     </table>
-</div>
+</div></div>

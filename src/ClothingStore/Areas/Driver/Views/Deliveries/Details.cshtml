@@ -1,0 +1,117 @@
+@model Order
+@{
+    ViewData["Title"] = $"Delivery #{Model.Id}";
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var store = StoreOptions.Value;
+}
+@section Head { <partial name="_LeafletHead" /> }
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> My deliveries</a>
+<div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+    <h1 class="page-title mb-0">Delivery #@Model.Id</h1>
+    <partial name="_OrderStatusBadge" model="Model.Status" />
+</div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div id="routeMap" class="map map-lg"></div>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            @if (Model.DeliveryLatitude.HasValue)
+            {
+                <a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener"
+                   href="https://www.google.com/maps/dir/?api=1&origin=@store.Latitude.ToString(inv),@store.Longitude.ToString(inv)&destination=@Model.DeliveryLatitude.Value.ToString(inv),@Model.DeliveryLongitude!.Value.ToString(inv)&travelmode=driving">
+                    <i class="bi bi-sign-turn-right me-1"></i>Navigate in Google Maps
+                </a>
+            }
+            <span class="small text-muted align-self-center" id="gpsStatus"></span>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="surface p-4 mb-3">
+            <div class="section-title">Customer</div>
+            <p class="mb-1 fw-semibold">@Model.RecipientName</p>
+            @if (!string.IsNullOrEmpty(Model.Phone))
+            {
+                <p class="mb-1"><a href="tel:@Model.Phone"><i class="bi bi-telephone me-1"></i>@Model.Phone</a></p>
+            }
+            <p class="mb-2"><i class="bi bi-geo-alt me-1"></i>@Model.ShippingAddress</p>
+            <div class="eta-box small"><i class="bi bi-stopwatch me-1"></i>@Model.DistanceKm km from the store · about @Model.EstimatedMinutes min</div>
+            @if (Model.DeliveryWindowEnd.HasValue)
+            {
+                <p class="small mt-2 mb-0"><strong>Deliver by:</strong> @Model.DeliveryWindowEnd.Value.ToLocalTime().ToString("dddd, d MMMM")</p>
+            }
+        </div>
+
+        @if (Model.Status == OrderStatus.DriverAssigned)
+        {
+            <div class="surface p-4 mb-3">
+                <div class="section-title">Ready to go?</div>
+                <p class="small text-muted">Tap when you leave the store. The customer gets an email with the estimated arrival time and can track you live while this page is open.</p>
+                <form asp-action="Depart" asp-route-id="@Model.Id" method="post">
+                    <button class="btn btn-primary btn-lg w-100"><i class="bi bi-send me-2"></i>I'm leaving now</button>
+                </form>
+            </div>
+            <div class="surface p-4 mb-3">
+                <div class="section-title text-danger">Not available?</div>
+                <p class="small text-muted">This delivery was accepted for you automatically. If you can't do it, reject it so the admin can reassign it.</p>
+                <form asp-action="Reject" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Reject this delivery?');">
+                    <textarea name="reason" class="form-control mb-2" rows="2" placeholder="Reason, e.g. vehicle in for service" required></textarea>
+                    <button class="btn btn-outline-danger w-100"><i class="bi bi-x-circle me-1"></i>Reject delivery</button>
+                </form>
+            </div>
+        }
+        else if (Model.Status == OrderStatus.OutForDelivery)
+        {
+            <div class="surface p-4 mb-3" style="border-color:var(--accent);background:#fffaf0">
+                <div class="section-title">On the way</div>
+                <p class="small">Left at @Model.DepartedAt?.ToLocalTime().ToString("HH:mm"). Your location is shared with the customer while this page is open.</p>
+                <a asp-action="Scan" class="btn btn-primary btn-lg w-100"><i class="bi bi-qr-code-scan me-2"></i>Scan customer QR to confirm</a>
+            </div>
+        }
+        else if (Model.Status == OrderStatus.Delivered)
+        {
+            <div class="surface p-4 mb-3 text-center">
+                <i class="bi bi-patch-check-fill fs-1 text-brand"></i>
+                <div class="fw-bold mt-2">Delivered @Model.CompletedAt?.ToLocalTime().ToString("dd MMM yyyy HH:mm")</div>
+            </div>
+        }
+
+        <div class="surface p-4">
+            <div class="section-title">Items</div>
+            <ul class="list-unstyled small mb-0">
+                @foreach (var i in Model.Items) { <li class="py-1 border-bottom">@i.Quantity × @i.ProductName <span class="text-muted">(size @i.Size)</span></li> }
+            </ul>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_LeafletScripts" />
+    <script>
+        const dest = @Html.Raw(Model.DeliveryLatitude.HasValue
+            ? $"{{ lat: {Model.DeliveryLatitude.Value.ToString(inv)}, lng: {Model.DeliveryLongitude!.Value.ToString(inv)}, label: 'Customer' }}"
+            : "null");
+        const route = StoreMaps.initRouteMap(document.getElementById('routeMap'), dest, null);
+    </script>
+    @if (Model.Status == OrderStatus.OutForDelivery)
+    {
+        <form id="locForm">@Html.AntiForgeryToken()</form>
+        <script>
+            // Share the driver's live location with the customer while this page is open.
+            const status = document.getElementById('gpsStatus');
+            const token = document.querySelector('#locForm input[name="__RequestVerificationToken"]').value;
+            let last = 0;
+            if (!navigator.geolocation) {
+                status.textContent = 'This browser cannot share location.';
+            } else {
+                navigator.geolocation.watchPosition(p => {
+                    const { latitude: lat, longitude: lng } = p.coords;
+                    route.setDriver(lat, lng);
+                    if (Date.now() - last < 8000) return;
+                    last = Date.now();
+                    const body = new URLSearchParams({ lat, lng, __RequestVerificationToken: token });
+                    fetch('@Url.Action("Location", new { id = Model.Id })', { method: 'POST', body })
+                        .then(r => status.textContent = r.ok ? '📡 Sharing live location · ' + new Date().toLocaleTimeString() : 'Location not sent');
+                }, () => status.textContent = 'Allow location access so the customer can track you.',
+                   { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+            }
+        </script>
+    }
+}

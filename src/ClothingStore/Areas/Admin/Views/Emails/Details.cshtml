@@ -1,0 +1,11 @@
+@model EmailLog
+@{
+    ViewData["Title"] = Model.Subject;
+}
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Emails</a>
+<div class="surface p-4">
+    <div class="small text-muted">To @Model.To · @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</div>
+    <h1 class="h4 page-title mt-1">@Model.Subject</h1>
+    @if (!Model.Sent) { <div class="alert alert-warning small">Not sent: @Model.Error</div> }
+    <iframe sandbox="" srcdoc="@Model.Body" class="w-100 border rounded-3 mt-2" style="height:560px;background:#fff"></iframe>
+</div>

@@ -1,20 +1,27 @@
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    string Active(string c) => c == controller ? "active" : "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    string Active(string c, string? a = null) => c == controller && (a == null || a == action) ? "active" : "";
 }
-<div class="row">
-    <aside class="col-md-3 col-lg-2 mb-4">
-        <div class="list-group">
-            <span class="list-group-item bg-dark text-white fw-semibold"><i class="bi bi-gear"></i> Admin panel</span>
-            <a class="list-group-item list-group-item-action @Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a class="list-group-item list-group-item-action @Active("Users")" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i> Users</a>
-            <a class="list-group-item list-group-item-action @Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="bi bi-tags"></i> Products</a>
-            <a class="list-group-item list-group-item-action @Active("Orders")" asp-area="Admin" asp-controller="Orders" asp-action="Index"><i class="bi bi-receipt"></i> Orders</a>
-            <a class="list-group-item list-group-item-action" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop"></i> View shop</a>
-        </div>
+@section Head { @await RenderSectionAsync("Head", required: false) }
+<div class="row g-4">
+    <aside class="col-lg-3 col-xl-2">
+        <nav class="side-menu">
+            <div class="menu-title">Admin</div>
+            <a class="@Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i>Dashboard</a>
+            <a class="@(controller == "Orders" && action != "Scan" ? "active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index"><i class="bi bi-receipt"></i>Orders</a>
+            <a class="@Active("Orders", "Scan")" asp-area="Admin" asp-controller="Orders" asp-action="Scan"><i class="bi bi-qr-code-scan"></i>Scan QR</a>
+            <a class="@Active("Products")" asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="bi bi-tags"></i>Products</a>
+            <div class="menu-title">People</div>
+            <a class="@Active("Drivers")" asp-area="Admin" asp-controller="Drivers" asp-action="Index"><i class="bi bi-truck"></i>Drivers</a>
+            <a class="@Active("Users")" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i>All users</a>
+            <div class="menu-title">System</div>
+            <a class="@Active("Emails")" asp-area="Admin" asp-controller="Emails" asp-action="Index"><i class="bi bi-envelope"></i>Emails sent</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop"></i>View shop</a>
+        </nav>
     </aside>
-    <section class="col-md-9 col-lg-10">
+    <section class="col-lg-9 col-xl-10">
         @RenderBody()
     </section>
 </div>

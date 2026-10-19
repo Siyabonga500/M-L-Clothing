@@ -2,12 +2,12 @@
 @{
     var css = Model switch
     {
-        OrderStatus.PendingPayment => "bg-warning text-dark",
-        OrderStatus.Paid => "bg-success",
-        OrderStatus.Processing => "bg-info text-dark",
-        OrderStatus.Shipped => "bg-primary",
-        OrderStatus.Delivered => "bg-dark",
-        _ => "bg-secondary"
+        OrderStatus.PendingPayment => "status-pending",
+        OrderStatus.Paid => "status-paid",
+        OrderStatus.Processing or OrderStatus.DriverAssigned or OrderStatus.ReadyForCollection => "status-progress",
+        OrderStatus.OutForDelivery => "status-moving",
+        OrderStatus.Delivered or OrderStatus.Collected => "status-done",
+        _ => "status-cancel"
     };
 }
-<span class="badge @css">@Model</span>
+<span class="status @css">@Model.Display()</span>

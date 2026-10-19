@@ -1,0 +1,54 @@
+@model DriverCreateViewModel
+@{
+    ViewData["Title"] = "Register driver";
+}
+@section Head { <partial name="_LeafletHead" /> }
+<a asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Drivers</a>
+<h1 class="page-title mb-4">Register a driver</h1>
+<form asp-action="Create" method="post" class="surface p-4 row g-3 mx-0">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-6">
+        <label asp-for="FirstName" class="form-label">Name *</label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Surname" class="form-label">Surname *</label>
+        <input asp-for="Surname" class="form-control" />
+        <span asp-validation-for="Surname" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label">Email (login) *</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PhoneNumber" class="form-label"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label for="Gender" class="form-label">Gender *</label>
+        <partial name="_GenderSelect" model="Model.Gender" />
+        <span asp-validation-for="Gender" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DateOfBirth" class="form-label"></label>
+        <input asp-for="DateOfBirth" class="form-control" />
+    </div>
+    <partial name="_DriverFields" model="Model" />
+    <div class="col-12"><div class="section-title mb-0">Home address</div></div>
+    <partial name="_AddressFields" model="Model" />
+    <div class="col-12"><div class="section-title mb-0">Login password</div></div>
+    <div class="col-md-6">
+        <label asp-for="Password" class="form-label">Password *</label>
+        <input asp-for="Password" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ConfirmPassword" class="form-label">Confirm password *</label>
+        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+    <div class="col-12"><button class="btn btn-primary btn-lg"><i class="bi bi-person-plus me-1"></i>Register driver</button></div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /><partial name="_LeafletScripts" /> }

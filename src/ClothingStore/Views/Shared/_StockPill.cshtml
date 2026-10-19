@@ -1,0 +1,13 @@
+@model Product
+@if (Model.Stock <= 0)
+{
+    <span class="stock-pill out"><i class="bi bi-x-circle"></i>Out of stock</span>
+}
+else if (Model.Stock <= 5)
+{
+    <span class="stock-pill low"><i class="bi bi-exclamation-circle"></i>Only @Model.Stock left</span>
+}
+else
+{
+    <span class="stock-pill in"><i class="bi bi-check-circle"></i>@Model.Stock available</span>
+}

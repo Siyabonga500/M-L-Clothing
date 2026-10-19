@@ -1,9 +1,16 @@
+using System.Globalization;
 using ClothingStore.Data;
 using ClothingStore.Models;
 using ClothingStore.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
+
+// Use "." for decimals everywhere (map coordinates, prices). A South African Windows
+// setting uses "," which would break reading numbers posted from forms and maps.
+var appCulture = CultureInfo.GetCultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = appCulture;
+CultureInfo.DefaultThreadCurrentUICulture = appCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +41,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 builder.Services.Configure<StoreSettings>(builder.Configuration.GetSection("Store"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 Money.Symbol = builder.Configuration["Store:CurrencySymbol"] ?? "R";
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<DeliveryService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -54,6 +64,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(appCulture),
+    SupportedCultures = new[] { appCulture },
+    SupportedUICultures = new[] { appCulture }
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -61,6 +78,11 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapAreaControllerRoute(
+    name: "driver",
+    areaName: "Driver",
+    pattern: "Driver/{controller=Deliveries}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "areas",

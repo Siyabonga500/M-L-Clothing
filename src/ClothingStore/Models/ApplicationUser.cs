@@ -28,6 +28,17 @@ public class ApplicationUser : IdentityUser
     [StringLength(10)]
     public string? PostalCode { get; set; }
 
+    // Home location picked on the map at registration.
+    public double? HomeLatitude { get; set; }
+    public double? HomeLongitude { get; set; }
+
+    // Drivers only.
+    [StringLength(100)]
+    public string? VehicleDescription { get; set; }
+
+    [StringLength(20)]
+    public string? VehicleRegistration { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public string FullName => $"{FirstName} {Surname}";

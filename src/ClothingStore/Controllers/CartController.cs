@@ -1,11 +1,12 @@
 using System.Security.Claims;
+using ClothingStore.Filters;
 using ClothingStore.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClothingStore.Controllers;
 
-[Authorize]
+[Authorize, ShoppersOnly]
 public class CartController : Controller
 {
     private readonly CartService _cart;

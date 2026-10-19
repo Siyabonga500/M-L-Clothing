@@ -1,0 +1,69 @@
+@model Order
+@{
+    ViewData["Title"] = $"Track order #{Model.Id}";
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+@section Head { <partial name="_LeafletHead" /> }
+<a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Order #@Model.Id</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <h1 class="page-title mb-0">Track your delivery</h1>
+    <span class="status status-moving" id="statusText">@Model.Status.Display()</span>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div id="trackMap" class="map map-lg"></div>
+        <div class="small text-muted mt-2" id="updated"></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="surface p-4">
+            <div class="section-title">Estimated arrival</div>
+            <div class="display-6 fw-bold text-brand" id="etaTime">–</div>
+            <div class="text-muted" id="etaText">Waiting for the driver's location…</div>
+            <hr />
+            <div class="small"><strong>Driver:</strong> @Model.Driver?.FullName</div>
+            @if (!string.IsNullOrEmpty(Model.Driver?.VehicleDescription))
+            {
+                <div class="small"><strong>Vehicle:</strong> @Model.Driver.VehicleDescription @Model.Driver.VehicleRegistration</div>
+            }
+            <div class="small mt-2"><strong>To:</strong> @Model.ShippingAddress</div>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-primary w-100 mt-3"><i class="bi bi-qr-code me-1"></i>Show my QR code</a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_LeafletScripts" />
+    <script>
+        const dest = @Html.Raw(Model.DeliveryLatitude.HasValue
+            ? $"{{ lat: {Model.DeliveryLatitude.Value.ToString(inv)}, lng: {Model.DeliveryLongitude!.Value.ToString(inv)}, label: 'Your address' }}"
+            : "null");
+        const route = StoreMaps.initRouteMap(document.getElementById('trackMap'), dest, null);
+        let fitted = false;
+        async function poll() {
+            try {
+                const r = await fetch('@Url.Action("TrackData", new { id = Model.Id })', { cache: 'no-store' });
+                if (!r.ok) return;
+                const d = await r.json();
+                document.getElementById('statusText').textContent = d.statusText;
+                if (d.driverLat != null) {
+                    route.setDriver(d.driverLat, d.driverLng);
+                    if (!fitted) { route.fit(); fitted = true; }
+                    document.getElementById('updated').textContent = 'Driver location updated at ' + d.updated;
+                    if (dest) {
+                        const est = StoreMaps.estimate(d.driverLat, d.driverLng, dest.lat, dest.lng);
+                        const at = new Date(Date.now() + est.minutes * 60000);
+                        document.getElementById('etaTime').textContent = at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        document.getElementById('etaText').textContent = `About ${StoreMaps.formatMinutes(est.minutes)} away (${est.km} km).`;
+                    }
+                } else if (d.status === 'Delivered') {
+                    document.getElementById('etaTime').textContent = 'Delivered';
+                    document.getElementById('etaText').textContent = 'Your order has been delivered. Enjoy!';
+                    clearInterval(timer);
+                } else {
+                    document.getElementById('etaText').textContent = 'Live tracking starts when the driver leaves the store.';
+                }
+            } catch { }
+        }
+        poll();
+        const timer = setInterval(poll, 8000);
+    </script>
+}

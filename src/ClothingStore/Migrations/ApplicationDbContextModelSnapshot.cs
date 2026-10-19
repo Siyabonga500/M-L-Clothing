@@ -61,6 +61,12 @@ namespace ClothingStore.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<double?>("HomeLatitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("HomeLongitude")
+                        .HasColumnType("REAL");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
@@ -107,6 +113,14 @@ namespace ClothingStore.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("VehicleDescription")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("VehicleRegistration")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -151,20 +165,107 @@ namespace ClothingStore.Migrations
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.EmailLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Sent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailLogs");
+                });
+
             modelBuilder.Entity("ClothingStore.Models.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<double?>("DeliveryLatitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("DeliveryLongitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("DeliveryWindowEnd")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DepartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("DistanceKm")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("DriverAssignedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DriverId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("DriverLatitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("DriverLocationUpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("DriverLongitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Fulfilment")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("QrExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("QrGeneratedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QrToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("QrUsedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RecipientName")
@@ -197,11 +298,40 @@ namespace ClothingStore.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("QrToken")
+                        .IsUnique();
+
                     b.HasIndex("StripeSessionId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.OrderEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderEvents");
                 });
 
             modelBuilder.Entity("ClothingStore.Models.OrderItem", b =>
@@ -258,10 +388,6 @@ namespace ClothingStore.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
@@ -269,6 +395,9 @@ namespace ClothingStore.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("OriginalPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -284,6 +413,30 @@ namespace ClothingStore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -435,13 +588,31 @@ namespace ClothingStore.Migrations
 
             modelBuilder.Entity("ClothingStore.Models.Order", b =>
                 {
+                    b.HasOne("ClothingStore.Models.ApplicationUser", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("ClothingStore.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Driver");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.OrderEvent", b =>
+                {
+                    b.HasOne("ClothingStore.Models.Order", "Order")
+                        .WithMany("Events")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("ClothingStore.Models.OrderItem", b =>
@@ -459,6 +630,17 @@ namespace ClothingStore.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.ProductImage", b =>
+                {
+                    b.HasOne("ClothingStore.Models.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
                 });
@@ -516,7 +698,14 @@ namespace ClothingStore.Migrations
 
             modelBuilder.Entity("ClothingStore.Models.Order", b =>
                 {
+                    b.Navigation("Events");
+
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.Product", b =>
+                {
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

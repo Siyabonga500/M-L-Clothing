@@ -1,0 +1,9 @@
+@using ClothingStore
+@using ClothingStore.Models
+@using ClothingStore.ViewModels
+@using ClothingStore.Services
+@using ClothingStore.Data
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject Microsoft.Extensions.Options.IOptions<StoreSettings> StoreOptions
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

@@ -2,35 +2,53 @@
 @{
     ViewData["Title"] = "Manage orders";
     var current = ViewData["Status"] as OrderStatus?;
+    var filter = ViewData["Filter"] as string;
 }
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Orders</h1>
-    <form method="get">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <h1 class="page-title mb-0">Orders</h1>
+    <form method="get" class="d-flex gap-2">
         <select name="status" class="form-select" onchange="this.form.submit()">
             <option value="">All statuses</option>
             @foreach (var s in Enum.GetValues<OrderStatus>())
             {
-                <option value="@s" selected="@(s == current)">@s</option>
+                <option value="@s" selected="@(s == current)">@s.Display()</option>
             }
         </select>
     </form>
 </div>
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead><tr><th>#</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>#@o.Id</td>
-                <td>@o.User?.FullName<br /><small class="text-muted">@o.User?.Email</small></td>
-                <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
-                <td>@o.Items.Sum(i => i.Quantity)</td>
-                <td>@o.Total.ToMoney()</td>
-                <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
-                <td class="text-end"><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-dark">Manage</a></td>
-            </tr>
-        }
-        </tbody>
-    </table>
+<div class="chip-row mb-3">
+    <a class="chip @(filter == null && current == null ? "active" : "")" asp-action="Index">All</a>
+    <a class="chip @(filter == "needs-driver" ? "active" : "")" asp-action="Index" asp-route-filter="needs-driver">Needs a driver</a>
+    <a class="chip @(current == OrderStatus.OutForDelivery ? "active" : "")" asp-action="Index" asp-route-status="OutForDelivery">Out for delivery</a>
+    <a class="chip @(current == OrderStatus.ReadyForCollection ? "active" : "")" asp-action="Index" asp-route-status="ReadyForCollection">Ready for collection</a>
+</div>
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>#</th><th>Customer</th><th>Type</th><th>Driver</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="8" class="text-center text-muted py-4">No orders here.</td></tr>
+            }
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">#@o.Id</td>
+                    <td>@o.User?.FullName<div class="small text-muted">@o.User?.Email</div></td>
+                    <td><i class="bi @(o.IsDelivery ? "bi-truck" : "bi-shop") me-1"></i>@(o.IsDelivery ? "Delivery" : "Collection")</td>
+                    <td>
+                        @if (o.Driver != null) { @o.Driver.FullName }
+                        else if (o.IsDelivery && o.IsPaid && !o.IsCompleted) { <span class="status status-pending">Needs driver</span> }
+                        else { <span class="text-muted">–</span> }
+                    </td>
+                    <td>@o.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")</td>
+                    <td>@o.Total.ToMoney()</td>
+                    <td><partial name="_OrderStatusBadge" model="o.Status" /></td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">Manage</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>

@@ -1,51 +1,78 @@
 @model HomeViewModel
 @{
     ViewData["Title"] = "Shop";
+    var store = StoreOptions.Value;
+    var onSale = Model.Products.Count(p => p.IsOnSale);
 }
 
-<div class="hero p-4 p-md-5 mb-4">
-    <h1 class="display-5 fw-bold">New season. New style.</h1>
-    <p class="lead mb-0">Browse our latest clothing collection and check out securely with Stripe.</p>
-</div>
+<section class="hero mb-4">
+    <div class="row align-items-center position-relative" style="z-index:1">
+        <div class="col-lg-8">
+            <div class="eyebrow mb-2">New season collection</div>
+            <h1 class="mb-3">Dress well.<br />Delivered to your door.</h1>
+            <p class="lead mb-0 opacity-75">Shop the latest styles and choose delivery anywhere in Durban or free collection from our store.</p>
+            <div class="hero-perks">
+                <span><i class="bi bi-truck"></i>Delivered within @store.DeliveryDays days</span>
+                <span><i class="bi bi-shop"></i>Free in-store collection</span>
+                <span><i class="bi bi-qr-code"></i>QR-secured hand-over</span>
+                <span><i class="bi bi-shield-lock"></i>Secure Stripe checkout</span>
+            </div>
+        </div>
+        @if (onSale > 0)
+        {
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <div class="d-inline-block p-4 rounded-4" style="background:rgba(255,255,255,.08)">
+                    <div class="display-5 fw-bold" style="color:var(--accent)">SALE</div>
+                    <div class="opacity-75">@onSale items marked down</div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
 
-<form method="get" class="row g-2 mb-4">
-    <div class="col-md-6">
-        <input type="search" name="search" value="@Model.Search" class="form-control" placeholder="Search clothes..." />
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="chip-row">
+        <a class="chip @(string.IsNullOrEmpty(Model.Category) ? "active" : "")" asp-action="Index" asp-route-search="@Model.Search">All</a>
+        @foreach (var c in Model.Categories)
+        {
+            <a class="chip @(c == Model.Category ? "active" : "")" asp-action="Index" asp-route-category="@c" asp-route-search="@Model.Search">@c</a>
+        }
     </div>
-    <div class="col-md-4">
-        <select name="category" class="form-select" onchange="this.form.submit()">
-            <option value="">All categories</option>
-            @foreach (var c in Model.Categories)
-            {
-                <option value="@c" selected="@(c == Model.Category)">@c</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-2 d-grid">
-        <button class="btn btn-outline-dark" type="submit"><i class="bi bi-search"></i> Search</button>
-    </div>
-</form>
+    <form method="get" class="d-flex gap-2" style="min-width:280px">
+        <input type="hidden" name="category" value="@Model.Category" />
+        <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="search" name="search" value="@Model.Search" class="form-control border-start-0" placeholder="Search clothes…" />
+        </div>
+    </form>
+</div>
 
 @if (!Model.Products.Any())
 {
-    <p class="text-muted">No products found.</p>
+    <div class="empty-state surface">
+        <i class="bi bi-search"></i>
+        <p class="lead mt-3 mb-1">No products found</p>
+        <a asp-action="Index" class="btn btn-outline-primary mt-2">Clear filters</a>
+    </div>
 }
 
-<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+<div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-md-4">
     @foreach (var p in Model.Products)
     {
         <div class="col">
-            <div class="card h-100 product-card">
-                <a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">
-                    <img src="@p.ImageUrl" class="card-img-top" alt="@p.Name"
-                         onerror="this.src='https://placehold.co/600x400?text=@Uri.EscapeDataString(p.Name)'" />
+            <div class="product-card">
+                <a class="thumb" asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">
+                    <img src="@p.MainImageUrl" alt="@p.Name" loading="lazy"
+                         onerror="this.onerror=null;this.src='/img/placeholder.svg'" />
+                    @if (p.IsOnSale) { <span class="sale-badge">-@p.SavingPercent%</span> }
                 </a>
-                <div class="card-body d-flex flex-column">
-                    <span class="badge bg-secondary align-self-start mb-2">@p.Category</span>
-                    <h5 class="card-title">
-                        <a class="text-decoration-none text-dark" asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">@p.Name</a>
-                    </h5>
-                    <p class="fs-5 fw-semibold mb-3">@p.Price.ToMoney()</p>
+                <div class="body">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span class="category">@p.Category</span>
+                        <partial name="_StockPill" model="p" />
+                    </div>
+                    <a class="name" asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">@p.Name</a>
+                    <div class="mb-3"><partial name="_PriceTag" model="p" /></div>
                     <div class="mt-auto">
                         <partial name="_AddToCart" model="p" view-data='new ViewDataDictionary(ViewData) { ["Compact"] = true }' />
                     </div>
