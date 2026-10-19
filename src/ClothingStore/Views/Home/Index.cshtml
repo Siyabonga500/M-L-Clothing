@@ -5,31 +5,6 @@
     var onSale = Model.Products.Count(p => p.IsOnSale);
 }
 
-<section class="hero mb-4">
-    <div class="row align-items-center position-relative" style="z-index:1">
-        <div class="col-lg-8">
-            <div class="eyebrow mb-2">New season collection</div>
-            <h1 class="mb-3">Dress well.<br />Delivered to your door.</h1>
-            <p class="lead mb-0 opacity-75">Shop the latest styles and choose delivery anywhere in Durban or free collection from our store.</p>
-            <div class="hero-perks">
-                <span><i class="bi bi-truck"></i>Delivered within @store.DeliveryDays days</span>
-                <span><i class="bi bi-shop"></i>Free in-store collection</span>
-                <span><i class="bi bi-qr-code"></i>QR-secured hand-over</span>
-                <span><i class="bi bi-shield-lock"></i>Secure Stripe checkout</span>
-            </div>
-        </div>
-        @if (onSale > 0)
-        {
-            <div class="col-lg-4 d-none d-lg-block text-center">
-                <div class="d-inline-block p-4 rounded-4" style="background:rgba(255,255,255,.08)">
-                    <div class="display-5 fw-bold" style="color:var(--accent)">SALE</div>
-                    <div class="opacity-75">@onSale items marked down</div>
-                </div>
-            </div>
-        }
-    </div>
-</section>
-
 <form method="get" class="surface p-3 mb-3">
     <input type="hidden" name="category" value="@Model.Category" />
     <div class="row g-2 align-items-end">
@@ -111,3 +86,28 @@
         </div>
     }
 </div>
+
+<section class="hero mt-5">
+    <div class="row align-items-center position-relative" style="z-index:1">
+        <div class="col-lg-8">
+            <div class="eyebrow mb-2">New season collection</div>
+            <h1 class="mb-3">Dress well.<br />Delivered to your door.</h1>
+            <p class="lead mb-0 opacity-75">Shop the latest styles and choose delivery anywhere in Durban or free collection from our store.</p>
+            <div class="hero-perks">
+                <span><i class="bi bi-truck"></i>Delivered within @store.DeliveryDays days</span>
+                <span><i class="bi bi-shop"></i>Free in-store collection</span>
+                <span><i class="bi bi-qr-code"></i>QR-secured hand-over</span>
+                <span><i class="bi bi-shield-lock"></i>Secure Stripe checkout</span>
+            </div>
+        </div>
+        @if (onSale > 0)
+        {
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <div class="d-inline-block p-4 rounded-4" style="background:rgba(255,255,255,.08)">
+                    <div class="display-5 fw-bold" style="color:var(--accent)">SALE</div>
+                    <div class="opacity-75">@onSale items marked down</div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
