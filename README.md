@@ -125,6 +125,8 @@ Anything in this file overrides `appsettings.json`. Restart the app after changi
 - **Email**: Gmail does **not** accept your normal password. Turn on 2-Step Verification, then create an
   **App password** at https://myaccount.google.com/apppasswords and use its 16 letters (no spaces) as `Email:Password`.
   Use **Admin → Emails sent → Send test email** to check it works; failures show a plain explanation.
+  If it mentions the server's **certificate**, antivirus email/SSL scanning (Avast, AVG, Kaspersky…) is usually
+  intercepting the connection: turn that scanning off or add an exception.
   If it says it **could not connect** (error 10060), something is blocking port 587: set `"SmtpPort": 465`
   (SSL is used automatically on 465), or allow the app through your antivirus/firewall. Check in PowerShell with
   `Test-NetConnection smtp.gmail.com -Port 465`.

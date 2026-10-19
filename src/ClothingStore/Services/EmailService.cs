@@ -58,6 +58,9 @@ public class EmailService
                     : SecureSocketOptions.StartTls;
 
                 using var client = new SmtpClient { Timeout = 20000 };
+                // The certificate is still fully checked (valid, trusted, right server name). We only skip the
+                // online "has it been revoked?" lookup, which often fails on home networks or behind antivirus.
+                client.CheckCertificateRevocation = false;
                 await client.ConnectAsync(_settings.SmtpHost, _settings.SmtpPort, security);
                 if (!string.IsNullOrEmpty(_settings.Username))
                     await client.AuthenticateAsync(_settings.Username, _settings.Password);
@@ -96,6 +99,10 @@ public class EmailService
                    "(antivirus mail shield, firewall, or a work/school network). " +
                    (_settings.SmtpPort == 587 ? "Try \"SmtpPort\": 465 instead. " : _settings.SmtpPort == 465 ? "Try \"SmtpPort\": 587 instead. " : "") +
                    "To check, run in PowerShell: Test-NetConnection " + _settings.SmtpHost + " -Port " + _settings.SmtpPort + " (" + text + ")";
+        if (text.Contains("certificate", StringComparison.OrdinalIgnoreCase))
+            return "The secure connection to the email server failed because its certificate wasn't accepted. " +
+                   "This usually means antivirus software (e.g. Avast/AVG/Kaspersky \"Mail Shield\" or HTTPS scanning) is " +
+                   "intercepting email. Turn off its email/SSL scanning, or add an exception for this app. (" + text + ")";
         if (text.Contains("could not be resolved", StringComparison.OrdinalIgnoreCase)
             || text.Contains("actively refused", StringComparison.OrdinalIgnoreCase)
             || text.Contains("not known", StringComparison.OrdinalIgnoreCase) || text.Contains("No such host", StringComparison.OrdinalIgnoreCase))
