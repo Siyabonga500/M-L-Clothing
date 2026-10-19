@@ -1,8 +1,9 @@
 @model Product
-@{ var firstAvailable = Model.OrderedSizes.FirstOrDefault(s => s.Quantity > 0); }
-@foreach (var s in Model.OrderedSizes)
+@* Only sizes that are in stock can be chosen; sold-out sizes are left out of the list. *@
+@{ var inStock = Model.OrderedSizes.Where(s => s.Quantity > 0).ToList(); }
+@foreach (var s in inStock)
 {
-    <option value="@s.Size" data-qty="@s.Quantity" disabled="@(s.Quantity <= 0)" selected="@(s == firstAvailable)">
-        @s.Size @(s.Quantity <= 0 ? "– sold out" : s.Quantity <= 5 ? $"– only {s.Quantity} left" : $"({s.Quantity})")
+    <option value="@s.Size" data-qty="@s.Quantity" selected="@(s == inStock[0])">
+        @s.Size @(s.Quantity <= 5 ? $"– only {s.Quantity} left" : $"({s.Quantity})")
     </option>
 }
