@@ -18,7 +18,7 @@
     <title>@ViewData["Title"] · @store.Name</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
     @await RenderSectionAsync("Head", required: false)
@@ -75,8 +75,9 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
-                        <li class="nav-item"><a class="nav-link @Active("Home")" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-1"></i>Shop</a></li>
+                        <li class="nav-item"><a class="nav-link @(controller == "Home" && action == "Index" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-1"></i>Shop</a></li>
                         <li class="nav-item"><a class="nav-link @Active("Reviews")" asp-area="" asp-controller="Reviews" asp-action="Index"><i class="bi bi-star me-1"></i>Driver reviews</a></li>
+                        <li class="nav-item"><a class="nav-link @(controller == "Home" && action == "Contact" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Contact"><i class="bi bi-envelope me-1"></i>Contact</a></li>
                         @if (isShopper)
                         {
                             <li class="nav-item"><a class="nav-link @Active("Orders")" asp-area="" asp-controller="Orders" asp-action="Index"><i class="bi bi-box-seam me-1"></i>My Orders</a></li>
@@ -151,7 +152,7 @@
             </div>
             <div class="bottom py-3 small d-flex justify-content-between flex-wrap gap-2">
                 <span>&copy; @DateTime.Now.Year @store.Name</span>
-                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <span><a asp-area="" asp-controller="Home" asp-action="Contact" class="me-3">Contact us</a><a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></span>
             </div>
         </div>
     </footer>

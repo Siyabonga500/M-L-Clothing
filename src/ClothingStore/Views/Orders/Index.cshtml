@@ -6,14 +6,21 @@
 @{ var filter = (OrderHistoryFilter)ViewData["Filter"]!; var total = (int)ViewData["TotalOrders"]!; }
 @if (total > 0)
 {
-    <partial name="_OrderFilter" model="filter" />
-    <p class="small text-muted">Showing @Model.Count of @total order(s)@(filter.HasDates ? $" from {filter.From?.ToString("dd MMM yyyy") ?? "the start"} to {filter.To?.ToString("dd MMM yyyy") ?? "today"}" : "").</p>
+    <div class="chip-row mb-3">
+        @foreach (var (st, label) in new (OrderStatus?, string)[] { (null, "All"), (OrderStatus.DriverAssigned, "Driver assigned"), (OrderStatus.OutForDelivery, "Out for delivery"), (OrderStatus.Delivered, "Delivered"), (OrderStatus.ReadyForCollection, "Ready to collect"), (OrderStatus.Collected, "Collected") })
+        {
+            <a class="chip @(filter.Status == st ? "active" : "")" asp-action="Index" asp-route-Status="@st" asp-route-Sort="@filter.Sort"
+               asp-route-From="@filter.From?.ToString("yyyy-MM-dd")" asp-route-To="@filter.To?.ToString("yyyy-MM-dd")">@label</a>
+        }
+    </div>
+    <partial name="_OrderFilter" model="filter" view-data='new ViewDataDictionary(ViewData) { ["ShowStatus"] = true }' />
+    <p class="small text-muted">Showing @Model.Count of @total order(s)@(filter.Status.HasValue ? $" that are {filter.Status.Value.Display().ToLower()}" : "")@(filter.HasDates ? $" from {filter.From?.ToString("dd MMM yyyy") ?? "the start"} to {filter.To?.ToString("dd MMM yyyy") ?? "today"}" : "").</p>
 }
 @if (total > 0 && !Model.Any())
 {
     <div class="empty-state surface">
         <i class="bi bi-calendar-x"></i>
-        <p class="lead mt-3">No orders in those dates.</p>
+        <p class="lead mt-3">No orders match those filters.</p>
         <a asp-action="Index" class="btn btn-outline-primary">Show all orders</a>
     </div>
 }

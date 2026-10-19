@@ -25,11 +25,16 @@ public class OrderHistoryFilter
     [DataType(DataType.Date)]
     public DateTime? To { get; set; }
 
-    public bool HasDates => From.HasValue || To.HasValue;
+    /// <summary>Only orders in this status (e.g. Delivered, Out for delivery). Null = all.</summary>
+    public OrderStatus? Status { get; set; }
 
-    /// <summary>Filters by order date (From/To are whole days, local time) and sorts.</summary>
+    public bool HasDates => From.HasValue || To.HasValue;
+    public bool IsFiltered => HasDates || Status.HasValue || Sort == "oldest";
+
+    /// <summary>Filters by status and order date (From/To are whole days, local time) and sorts.</summary>
     public IEnumerable<Order> Apply(IEnumerable<Order> orders)
     {
+        if (Status.HasValue) orders = orders.Where(o => o.Status == Status.Value);
         if (From.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime().Date >= From.Value.Date);
         if (To.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime().Date <= To.Value.Date);
         return Sort == "oldest" ? orders.OrderBy(o => o.CreatedAt) : orders.OrderByDescending(o => o.CreatedAt);
@@ -135,4 +140,19 @@ public class ReviewsPageViewModel
     public string? DriverId { get; set; }
     public string Sort { get; set; } = "newest";
     public DriverRatingSummary? Selected => Drivers.FirstOrDefault(d => d.Driver.Id == DriverId);
+}
+
+public class ContactViewModel
+{
+    [Required, StringLength(100), Display(Name = "Your name")]
+    public string Name { get; set; } = string.Empty;
+
+    [Required, EmailAddress, StringLength(256), Display(Name = "Your email")]
+    public string Email { get; set; } = string.Empty;
+
+    [Phone, StringLength(30)]
+    public string? Phone { get; set; }
+
+    [Required, StringLength(2000, MinimumLength = 5)]
+    public string Message { get; set; } = string.Empty;
 }

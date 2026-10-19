@@ -274,3 +274,26 @@ a, .btn-link { text-decoration: none; }
 .star-input label::before { content: "\2605"; }
 .star-input input:checked ~ label, .star-input label:hover, .star-input label:hover ~ label { color: var(--accent); }
 .star-input input:focus-visible + label { outline: 2px solid var(--brand); border-radius: 4px; }
+
+/* ----- Photo banner (shop page) ----- */
+.photo-hero {
+    position: relative; overflow: hidden; border-radius: 18px; min-height: clamp(320px, 42vw, 480px);
+    display: flex; align-items: center; color: #fffaf0;
+    /* Dark overlay on the left keeps the text readable on any photo; brand gradient shows if the photo can't load. */
+    background:
+        linear-gradient(90deg, rgba(10, 20, 18, .72) 0%, rgba(10, 20, 18, .45) 45%, rgba(10, 20, 18, .1) 100%),
+        var(--hero-img) center / cover no-repeat,
+        linear-gradient(125deg, var(--brand), var(--brand-2));
+}
+.photo-hero-inner { padding: clamp(1.5rem, 5vw, 4.5rem); max-width: 1000px; }
+.photo-hero-title {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-weight: 400;
+    font-size: clamp(2.6rem, 7.5vw, 5.6rem); line-height: 1; letter-spacing: -.02em; margin: 0 0 .6rem; color: #fffaf0;
+}
+.photo-hero-sub { font-size: clamp(1.05rem, 2vw, 1.45rem); font-weight: 300; margin: 0; opacity: .95; }
+.btn-hero { background: #fffaf0; color: #111; border: 1px solid #111; border-radius: 0; font-weight: 500; padding: .7rem 1.8rem; }
+.btn-hero:hover { background: #fff; color: #111; }
+.btn-hero-outline { background: transparent; color: #fffaf0; border: 1px solid #fffaf0; border-radius: 0; font-weight: 500; padding: .7rem 1.8rem; }
+.btn-hero-outline:hover { background: rgba(255, 250, 240, .12); color: #fff; }
+html { scroll-behavior: smooth; }
+#products { scroll-margin-top: 1rem; }

@@ -4,28 +4,44 @@
     // Other filters on the page (e.g. admin status) to keep when sorting by date.
     var extra = ViewData["Keep"] as IEnumerable<(string, string)> ?? Array.Empty<(string, string)>();
     var clearUrl = ViewData["ClearUrl"] as string ?? Context.Request.Path.ToString();
+    var showStatus = ViewData["ShowStatus"] as bool? ?? false;
+    var statuses = new[] { OrderStatus.Paid, OrderStatus.DriverAssigned, OrderStatus.OutForDelivery, OrderStatus.Delivered,
+                           OrderStatus.ReadyForCollection, OrderStatus.Collected, OrderStatus.Cancelled };
 }
 <form method="get" class="surface p-3 mb-3">
     @foreach (var (k, v) in extra) { <input type="hidden" name="@k" value="@v" /> }
     <div class="row g-2 align-items-end">
-        <div class="col-md-3">
+        @if (showStatus)
+        {
+            <div class="col-md-3">
+                <label class="form-label small mb-1" for="Status">Delivery status</label>
+                <select id="Status" name="Status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All statuses</option>
+                    @foreach (var st in statuses)
+                    {
+                        <option value="@st" selected="@(f.Status == st)">@st.Display()</option>
+                    }
+                </select>
+            </div>
+        }
+        <div class="@(showStatus ? "col-md-2" : "col-md-3")">
             <label class="form-label small mb-1" for="Sort">Sort by</label>
             <select id="Sort" name="Sort" class="form-select" onchange="this.form.submit()">
                 <option value="newest" selected="@(f.Sort != "oldest")">Newest purchase first</option>
                 <option value="oldest" selected="@(f.Sort == "oldest")">Oldest purchase first</option>
             </select>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 @(showStatus ? "col-md-2" : "col-md-3")">
             <label class="form-label small mb-1" for="From">From date</label>
             <input type="date" id="From" name="From" value="@f.From?.ToString("yyyy-MM-dd")" class="form-control" />
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 @(showStatus ? "col-md-2" : "col-md-3")">
             <label class="form-label small mb-1" for="To">To date</label>
             <input type="date" id="To" name="To" value="@f.To?.ToString("yyyy-MM-dd")" class="form-control" />
         </div>
         <div class="col-md-3 d-flex gap-2">
             <button class="btn btn-primary flex-fill"><i class="bi bi-funnel me-1"></i>Apply</button>
-            @if (f.HasDates || f.Sort == "oldest")
+            @if (f.IsFiltered)
             {
                 <a href="@clearUrl" class="btn btn-outline-primary" title="Clear"><i class="bi bi-x-lg"></i></a>
             }

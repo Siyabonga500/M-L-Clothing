@@ -16,6 +16,14 @@ public class StoreSettings
     public double Latitude { get; set; } = -29.8583;
     public double Longitude { get; set; } = 31.0247;
     public string Phone { get; set; } = "";
+
+    /// <summary>Shown on the Contact page. Contact form messages go here (or to the admin if empty).</summary>
+    public string Email { get; set; } = "";
+
+    // Big photo banner at the top of the shop page.
+    public string HeroTitle { get; set; } = "Fashion Redefined";
+    public string HeroSubtitle { get; set; } = "Quality clothing for every occasion";
+    public string HeroImageUrl { get; set; } = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80";
     public string CollectionHours { get; set; } = "Mon–Fri 08:00–17:00, Sat 08:00–13:00";
 
     /// <summary>Customers are told their order arrives within this many days of driver assignment.</summary>
