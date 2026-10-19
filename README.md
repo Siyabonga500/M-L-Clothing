@@ -33,6 +33,10 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   sale price with the original price crossed out, **% off and amount saved**, the **total quantity** and
   **how many are left in each size**. Sold-out sizes can't be chosen.
 - Clicking **Add to cart** while logged out sends you to **Login**; after logging in the item is added.
+- Login says **"Wrong username"** when no account uses the email, and **"Wrong password"** otherwise.
+- **Forgot password?** (on the login page): enter your email and the phone number on your account (082…, +27 82…
+  and spaces are all accepted). If both match you choose a new password and get an email saying it was changed.
+  Five wrong phone numbers lock the account for 5 minutes. Accounts without a phone number must contact the store.
 - Register with Name, Surname, Email, Gender, Date of birth, Phone, Home address (**pick it on the map**), City, Province,
   Postal code, Password and Confirm password.
 - Checkout: choose **Deliver to me** (pick the address on the map; shows distance, estimated drive time and the
