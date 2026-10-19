@@ -36,8 +36,15 @@ public class Order
 
     public OrderStatus Status { get; set; } = OrderStatus.PendingPayment;
 
+    /// <summary>What the customer paid: items + delivery fee.</summary>
     [Column(TypeName = "decimal(18,2)")]
     public decimal Total { get; set; }
+
+    /// <summary>0 for collection.</summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal DeliveryFee { get; set; }
+
+    public decimal ItemsTotal => Total - DeliveryFee;
 
     public FulfilmentMethod Fulfilment { get; set; } = FulfilmentMethod.Delivery;
 

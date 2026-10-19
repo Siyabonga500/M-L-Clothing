@@ -78,8 +78,10 @@
             if (etaBox) {
                 const est = estimate(STORE.lat, STORE.lng, lat, lng);
                 etaBox.classList.remove('d-none');
+                const fee = est.km <= STORE.baseKm ? STORE.baseFee
+                    : STORE.baseFee + Math.ceil(Math.round((est.km - STORE.baseKm) * 10) / 10) * STORE.perKmFee;
                 etaBox.innerHTML = `<i class="bi bi-truck me-2"></i>About <strong>${est.km} km</strong> from our store · roughly
-                    <strong>${formatMinutes(est.minutes)}</strong> drive once your driver leaves.`;
+                    <strong>${formatMinutes(est.minutes)}</strong> drive · delivery fee <strong>R ${fee.toFixed(2)}</strong>`;
                 if (line) map.removeLayer(line);
                 line = L.polyline([[STORE.lat, STORE.lng], [lat, lng]], { color: '#183630', weight: 3, dashArray: '6 8' }).addTo(map);
             }

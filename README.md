@@ -24,8 +24,10 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 - Clicking **Add to cart** while logged out sends you to **Login**; after logging in the item is added.
 - Register with Name, Surname, Email, Gender, Date of birth, Phone, Home address (**pick it on the map**), City, Province,
   Postal code, Password and Confirm password.
-- Checkout: choose **Deliver to me** (pick the address on the map; shows distance and estimated drive time from the store)
-  or **Collect in store**. Pay with Stripe.
+- Checkout: choose **Deliver to me** (pick the address on the map; shows distance, estimated drive time and the
+  **delivery fee**) or **Collect in store** (free). The fee is added to the order total, the Stripe payment and the receipt.
+- **Delivery fee**: R90 for up to 10 km; beyond 10 km, R90 + R10 for every extra km (a started km counts as a
+  full km, e.g. 12.3 km = R120). Distance is estimated from the store to the pin on the map.
 - **Proof of payment**: as soon as payment is confirmed the customer is emailed a receipt listing the items, with a
   PDF attached. On the order page they can **Download PDF** or **Email it to me again**.
 - **My Orders**: progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
@@ -104,7 +106,8 @@ Anything in this file overrides `appsettings.json`. Restart the app after changi
   https://myaccount.google.com/apppasswords and use it as `Email:Password` (not your normal password).
   Until email is set up, emails are saved under **Admin → Emails sent** so you can still see them.
 - **Store** (in `appsettings.json` → `Store`): name, address, map position (`Latitude`/`Longitude`), collection hours,
-  `DeliveryDays` (3), `QrValidHours` (120) and `AverageSpeedKmh` used for time estimates.
+  `DeliveryDays` (3), `QrValidHours` (120), `AverageSpeedKmh` used for time estimates, and the delivery fee:
+  `DeliveryBaseFee` (90), `DeliveryBaseKm` (10) and `DeliveryPerKmFee` (10).
   The store's map position is approximate. If the pin is off, right-click the exact spot in Google Maps, copy the
   coordinates and paste them into `Latitude` and `Longitude`.
 

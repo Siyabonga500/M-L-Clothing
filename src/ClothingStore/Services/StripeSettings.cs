@@ -26,6 +26,22 @@ public class StoreSettings
 
     /// <summary>Average city driving speed used for delivery time estimates.</summary>
     public double AverageSpeedKmh { get; set; } = 35;
+
+    /// <summary>Delivery fee for distances up to <see cref="DeliveryBaseKm"/>.</summary>
+    public decimal DeliveryBaseFee { get; set; } = 90m;
+
+    public double DeliveryBaseKm { get; set; } = 10;
+
+    /// <summary>Charged for every kilometre (or part of one) beyond <see cref="DeliveryBaseKm"/>.</summary>
+    public decimal DeliveryPerKmFee { get; set; } = 10m;
+
+    /// <summary>R90 up to 10 km; after that R10 for each extra km (a started km counts as a full km).</summary>
+    public decimal DeliveryFee(double km)
+    {
+        if (km <= DeliveryBaseKm) return DeliveryBaseFee;
+        var extraKm = (int)Math.Ceiling(Math.Round(km - DeliveryBaseKm, 1));
+        return DeliveryBaseFee + extraKm * DeliveryPerKmFee;
+    }
 }
 
 public class EmailSettings

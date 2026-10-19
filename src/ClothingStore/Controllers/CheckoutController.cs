@@ -101,7 +101,7 @@ public class CheckoutController : Controller
                 ? $"Collect at store: {_store.Address}"
                 : model.ShippingAddress!,
             Phone = model.Phone,
-            Total = cart.Total,
+            Total = cart.Total, // delivery fee added below
             Items = cart.Items.Select(i => new OrderItem
             {
                 ProductId = i.ProductId,
@@ -119,6 +119,8 @@ public class CheckoutController : Controller
                 model.Latitude!.Value, model.Longitude!.Value, _store.AverageSpeedKmh);
             order.DistanceKm = km;
             order.EstimatedMinutes = minutes;
+            order.DeliveryFee = _store.DeliveryFee(km);
+            order.Total = cart.Total + order.DeliveryFee;
         }
         _db.Orders.Add(order);
         await _db.SaveChangesAsync();
@@ -146,6 +148,19 @@ public class CheckoutController : Controller
                 }
             }).ToList()
         };
+        if (order.DeliveryFee > 0)
+        {
+            options.LineItems.Add(new SessionLineItemOptions
+            {
+                Quantity = 1,
+                PriceData = new SessionLineItemPriceDataOptions
+                {
+                    Currency = _stripe.Currency,
+                    UnitAmount = (long)Math.Round(order.DeliveryFee * 100m),
+                    ProductData = new SessionLineItemPriceDataProductDataOptions { Name = $"Delivery ({order.DistanceKm} km)" }
+                }
+            });
+        }
 
         try
         {

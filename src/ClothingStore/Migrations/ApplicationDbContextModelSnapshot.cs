@@ -212,6 +212,9 @@ namespace ClothingStore.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("DeliveryFee")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<double?>("DeliveryLatitude")
                         .HasColumnType("REAL");
 

@@ -141,8 +141,12 @@ public class ReceiptService
                 // Totals
                 col.Item().AlignRight().Width(240).Column(c =>
                 {
-                    c.Item().Row(r => { r.RelativeItem().Text("Items"); r.RelativeItem().AlignRight().Text(order.Items.Sum(x => x.Quantity).ToString()); });
-                    c.Item().Row(r => { r.RelativeItem().Text(order.IsDelivery ? "Delivery" : "Collection"); r.RelativeItem().AlignRight().Text("Free"); });
+                    c.Item().Row(r => { r.RelativeItem().Text($"Items ({order.Items.Sum(x => x.Quantity)})"); r.RelativeItem().AlignRight().Text(order.ItemsTotal.ToMoney()); });
+                    c.Item().Row(r =>
+                    {
+                        r.RelativeItem().Text(order.IsDelivery ? $"Delivery fee{(order.DistanceKm.HasValue ? $" ({order.DistanceKm} km)" : "")}" : "Collection");
+                        r.RelativeItem().AlignRight().Text(order.DeliveryFee > 0 ? order.DeliveryFee.ToMoney() : "Free");
+                    });
                     c.Item().PaddingTop(4).BorderTop(1).BorderColor(Brand).PaddingTop(4).Row(r =>
                     {
                         r.RelativeItem().Text("Total paid").Bold().FontSize(12);
@@ -199,7 +203,12 @@ public class ReceiptService
                 <th style="padding:8px;text-align:right">Qty</th><th style="padding:8px;text-align:right">Amount</th>
               </tr></thead>
               <tbody>{rows}</tbody>
-              <tfoot><tr>
+              <tfoot>
+              <tr>
+                <td colspan="3" style="padding:8px;text-align:right">{(order.IsDelivery ? $"Delivery fee{(order.DistanceKm.HasValue ? $" ({order.DistanceKm} km)" : "")}" : "Collection")}</td>
+                <td style="padding:8px;text-align:right">{(order.DeliveryFee > 0 ? order.DeliveryFee.ToMoney() : "Free")}</td>
+              </tr>
+              <tr>
                 <td colspan="3" style="padding:8px;text-align:right;font-weight:bold">Total paid</td>
                 <td style="padding:8px;text-align:right;font-weight:bold;color:#183630">{order.Total.ToMoney()}</td>
               </tr></tfoot>

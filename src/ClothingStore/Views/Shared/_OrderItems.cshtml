@@ -15,6 +15,11 @@
         }
         </tbody>
         <tfoot>
+            <tr><td colspan="4" class="text-end text-muted">Items</td><td class="text-end">@Model.ItemsTotal.ToMoney()</td></tr>
+            <tr>
+                <td colspan="4" class="text-end text-muted">@(Model.IsDelivery ? $"Delivery fee{(Model.DistanceKm.HasValue ? $" ({Model.DistanceKm} km)" : "")}" : "Collection")</td>
+                <td class="text-end">@(Model.DeliveryFee > 0 ? Model.DeliveryFee.ToMoney() : "Free")</td>
+            </tr>
             <tr class="fw-bold"><td colspan="4" class="text-end">Total</td><td class="text-end text-brand">@Model.Total.ToMoney()</td></tr>
         </tfoot>
     </table>

@@ -6,7 +6,10 @@
         address: @Json.Serialize(store.Address),
         lat: @Json.Serialize(store.Latitude),
         lng: @Json.Serialize(store.Longitude),
-        speedKmh: @Json.Serialize(store.AverageSpeedKmh)
+        speedKmh: @Json.Serialize(store.AverageSpeedKmh),
+        baseFee: @Json.Serialize(store.DeliveryBaseFee),
+        baseKm: @Json.Serialize(store.DeliveryBaseKm),
+        perKmFee: @Json.Serialize(store.DeliveryPerKmFee)
     };
 </script>
 <script src="~/js/maps.js" asp-append-version="true"></script>

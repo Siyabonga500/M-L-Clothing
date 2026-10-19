@@ -18,7 +18,7 @@ public static class Geo
     {
         var km = HaversineKm(fromLat, fromLon, toLat, toLon) * RoadFactor;
         var minutes = (int)Math.Ceiling(km / Math.Max(5, speedKmh) * 60) + 5; // + 5 min to park and hand over
-        return (Math.Round(km, 1), minutes);
+        return (Math.Round(km, 1, MidpointRounding.AwayFromZero), minutes);
     }
 
     private static double ToRad(double deg) => deg * Math.PI / 180;
