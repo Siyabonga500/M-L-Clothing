@@ -14,12 +14,31 @@ public class OrdersController : Controller
     private readonly ApplicationDbContext _db;
     private readonly DeliveryService _delivery;
     private readonly UserManager<ApplicationUser> _users;
+    private readonly ReceiptService _receipts;
 
-    public OrdersController(ApplicationDbContext db, DeliveryService delivery, UserManager<ApplicationUser> users)
+    public OrdersController(ApplicationDbContext db, DeliveryService delivery, UserManager<ApplicationUser> users, ReceiptService receipts)
     {
         _db = db;
         _delivery = delivery;
         _users = users;
+        _receipts = receipts;
+    }
+
+    public async Task<IActionResult> Receipt(int id)
+    {
+        var order = await _receipts.LoadAsync(id);
+        if (order == null || !order.IsPaid) return NotFound();
+        return File(_receipts.CreatePdf(order), "application/pdf", ReceiptService.FileName(order));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> EmailReceipt(int id)
+    {
+        var order = await _receipts.LoadAsync(id);
+        if (order == null || !order.IsPaid) return NotFound();
+        await _receipts.SendAsync(order, BaseUrl);
+        TempData["Success"] = $"Proof of payment emailed to {order.User!.Email}.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";

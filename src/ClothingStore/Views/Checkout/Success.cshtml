@@ -10,6 +10,10 @@
         </div>
         <h1 class="page-title">Thank you! Payment confirmed.</h1>
         <p class="lead">Order <strong>#@Model.Id</strong> for <strong>@Model.Total.ToMoney()</strong> has been placed.</p>
+        <p class="mb-3"><i class="bi bi-envelope-check me-1 text-brand"></i>Your proof of payment has been emailed to you.</p>
+        <a asp-controller="Orders" asp-action="Receipt" asp-route-id="@Model.Id" class="btn btn-outline-primary mb-3">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Download receipt (PDF)
+        </a>
         <p class="text-muted">
             @if (Model.IsDelivery)
             {

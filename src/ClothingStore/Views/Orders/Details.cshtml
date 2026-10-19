@@ -118,6 +118,19 @@
                 </div>
             </div>
         }
+        @if (Model.IsPaid)
+        {
+            <div class="surface p-4 mb-3">
+                <div class="section-title"><i class="bi bi-receipt me-2"></i>Proof of payment</div>
+                <p class="small text-muted">A receipt listing your items was emailed to you when you paid.</p>
+                <div class="d-grid gap-2">
+                    <a asp-action="Receipt" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-file-earmark-pdf me-1"></i>Download PDF</a>
+                    <form asp-action="EmailReceipt" asp-route-id="@Model.Id" method="post" class="d-grid">
+                        <button class="btn btn-outline-primary"><i class="bi bi-envelope me-1"></i>Email it to me again</button>
+                    </form>
+                </div>
+            </div>
+        }
         <div class="surface p-4">
             <div class="d-flex justify-content-between small"><span class="text-muted">Placed</span><span>@Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span></div>
             @if (Model.PaidAt.HasValue)

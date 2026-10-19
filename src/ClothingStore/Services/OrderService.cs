@@ -7,8 +7,15 @@ namespace ClothingStore.Services;
 public class OrderService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ReceiptService _receipts;
+    private readonly IHttpContextAccessor _http;
 
-    public OrderService(ApplicationDbContext db) => _db = db;
+    public OrderService(ApplicationDbContext db, ReceiptService receipts, IHttpContextAccessor http)
+    {
+        _db = db;
+        _receipts = receipts;
+        _http = http;
+    }
 
     /// <summary>
     /// Marks an order as paid, reduces stock and empties the buyer's cart.
@@ -43,6 +50,11 @@ public class OrderService
         _db.CartItems.RemoveRange(cart);
 
         await _db.SaveChangesAsync();
+
+        // Email the customer their proof of payment (PDF attached). Runs once, when the order first becomes paid.
+        var paid = await _receipts.LoadAsync(order.Id);
+        var request = _http.HttpContext?.Request;
+        await _receipts.SendAsync(paid!, request == null ? null : $"{request.Scheme}://{request.Host}");
         return order;
     }
 }

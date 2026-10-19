@@ -11,9 +11,9 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 | --- | --- | --- |
 | ![Dashboard](docs/screenshots/4-admin-dashboard.png) | ![Admin](docs/screenshots/5-admin-order.png) | ![Driver](docs/screenshots/8-driver-delivery.png) |
 
-| Product page (< > pictures, stock per size) | Adding sizes and quantities |
-| --- | --- |
-| ![Product](docs/screenshots/10-new-product.png) | ![Sizes](docs/screenshots/11-product-sizes.png) |
+| Product page (< > pictures, stock per size) | Adding sizes and quantities | Proof of payment (PDF) |
+| --- | --- | --- |
+| ![Product](docs/screenshots/10-new-product.png) | ![Sizes](docs/screenshots/11-product-sizes.png) | ![Receipt](docs/screenshots/12-receipt.png) |
 
 ## Who can do what
 
@@ -26,6 +26,8 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   Postal code, Password and Confirm password.
 - Checkout: choose **Deliver to me** (pick the address on the map; shows distance and estimated drive time from the store)
   or **Collect in store**. Pay with Stripe.
+- **Proof of payment**: as soon as payment is confirmed the customer is emailed a receipt listing the items, with a
+  PDF attached. On the order page they can **Download PDF** or **Email it to me again**.
 - **My Orders**: progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
   estimated arrival time once the driver leaves.
 
@@ -34,7 +36,7 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 - Dashboard: revenue, users, drivers, what needs attention (deliveries waiting for a driver, collections to prepare)
   and **low stock by size**.
 - **Drivers**: register drivers (only the admin can), edit them, see their active and completed deliveries.
-- **Orders**: assign a driver (accepted automatically), mark collection orders ready, see the QR status
+- **Orders**: download or re-send a customer's receipt PDF, assign a driver (accepted automatically), mark collection orders ready, see the QR status
   (**Active / Used / Expired**) and **generate a new QR code**, override status.
 - **Scan QR** to confirm in-store collections.
 - **Products**: original price + now price, **up to 4 pictures** (upload or paste a link), choose the main picture.
@@ -112,6 +114,9 @@ network, the app must be published to a real https address.
 
 **Optional Stripe webhook** (marks orders paid even if the customer closes the browser before returning):
 `stripe listen --forward-to https://localhost:7139/Checkout/Webhook` and put the `whsec_...` value in `Stripe:WebhookSecret`.
+
+PDF receipts use [QuestPDF](https://www.questpdf.com/), free under its Community licence for businesses with under
+USD 1 million in yearly revenue.
 
 ## Project layout
 

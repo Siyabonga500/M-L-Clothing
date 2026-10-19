@@ -13,8 +13,13 @@ namespace ClothingStore.Controllers;
 public class OrdersController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly ReceiptService _receipts;
 
-    public OrdersController(ApplicationDbContext db) => _db = db;
+    public OrdersController(ApplicationDbContext db, ReceiptService receipts)
+    {
+        _db = db;
+        _receipts = receipts;
+    }
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -33,6 +38,24 @@ public class OrdersController : Controller
             .Include(o => o.Events.OrderByDescending(e => e.CreatedAt))
             .FirstOrDefaultAsync(o => o.Id == id && o.UserId == UserId);
         return order == null ? NotFound() : View(order);
+    }
+
+    // Proof of payment as a PDF (download / save).
+    public async Task<IActionResult> Receipt(int id)
+    {
+        var order = await _receipts.LoadAsync(id);
+        if (order == null || order.UserId != UserId || !order.IsPaid) return NotFound();
+        return File(_receipts.CreatePdf(order), "application/pdf", ReceiptService.FileName(order));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> EmailReceipt(int id)
+    {
+        var order = await _receipts.LoadAsync(id);
+        if (order == null || order.UserId != UserId || !order.IsPaid) return NotFound();
+        await _receipts.SendAsync(order, $"{Request.Scheme}://{Request.Host}");
+        TempData["Success"] = $"Your proof of payment was sent to {order.User!.Email}.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     // The QR image. Only the customer who owns the order can load it, and only while it's active.

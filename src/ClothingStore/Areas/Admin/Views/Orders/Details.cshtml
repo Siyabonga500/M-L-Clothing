@@ -140,6 +140,15 @@
                 <span class="text-break">Stripe: @(Model.StripePaymentIntentId ?? "–")</span>
             </p>
             <div class="d-flex justify-content-between fw-bold mt-2"><span>Total</span><span class="text-brand">@Model.Total.ToMoney()</span></div>
+            @if (Model.IsPaid)
+            {
+                <div class="d-flex gap-2 mt-3">
+                    <a asp-action="Receipt" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary flex-fill"><i class="bi bi-file-earmark-pdf me-1"></i>Receipt PDF</a>
+                    <form asp-action="EmailReceipt" asp-route-id="@Model.Id" method="post" class="flex-fill d-grid">
+                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-envelope me-1"></i>Email receipt</button>
+                    </form>
+                </div>
+            }
         </div>
 
         <div class="surface p-4">

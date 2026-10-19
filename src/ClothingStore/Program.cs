@@ -49,10 +49,15 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 Money.Symbol = builder.Configuration["Store:CurrencySymbol"] ?? "R";
 StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<DeliveryService>();
+builder.Services.AddScoped<ReceiptService>();
+
+// QuestPDF (PDF receipts) is free under its Community licence for businesses under USD 1M yearly revenue.
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
