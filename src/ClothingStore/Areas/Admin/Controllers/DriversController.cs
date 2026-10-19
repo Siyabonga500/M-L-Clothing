@@ -34,6 +34,9 @@ public class DriversController : Controller
                 Done = g.Count(o => o.Status == OrderStatus.Delivered)
             })
             .ToDictionaryAsync(x => x.Key);
+        var ratings = await _db.DriverReviews.GroupBy(r => r.DriverId)
+            .Select(g => new { g.Key, Avg = g.Average(r => r.Rating), Count = g.Count() })
+            .ToDictionaryAsync(x => x.Key);
 
         return View(drivers.Select(d => new AdminUserViewModel
         {
@@ -41,7 +44,9 @@ public class DriversController : Controller
             IsDriver = true,
             IsLocked = d.LockoutEnd.HasValue && d.LockoutEnd > DateTimeOffset.UtcNow,
             ActiveDeliveries = counts.TryGetValue(d.Id, out var c) ? c.Active : 0,
-            OrderCount = counts.TryGetValue(d.Id, out var c2) ? c2.Done : 0
+            OrderCount = counts.TryGetValue(d.Id, out var c2) ? c2.Done : 0,
+            Rating = ratings.TryGetValue(d.Id, out var r) ? r.Avg : 0,
+            ReviewCount = ratings.TryGetValue(d.Id, out var r2) ? r2.Count : 0
         }).ToList());
     }
 

@@ -46,6 +46,7 @@
                             <li class="nav-item"><a class="nav-link @Active("Drivers", "Admin")" asp-area="Admin" asp-controller="Drivers" asp-action="Index">Drivers</a></li>
                             <li class="nav-item"><a class="nav-link @Active("Users", "Admin")" asp-area="Admin" asp-controller="Users" asp-action="Index">Users</a></li>
                             <li class="nav-item"><a class="nav-link @(controller == "Orders" && action == "Scan" ? "active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Scan">Scan QR</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Reviews" asp-action="Index">Reviews</a></li>
                             <li class="nav-item"><a class="nav-link @Active("Emails", "Admin")" asp-area="Admin" asp-controller="Emails" asp-action="Index">Emails</a></li>
                             <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">View shop</a></li>
                         </ul>
@@ -75,6 +76,7 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto gap-lg-1 mt-2 mt-lg-0">
                         <li class="nav-item"><a class="nav-link @Active("Home")" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-1"></i>Shop</a></li>
+                        <li class="nav-item"><a class="nav-link @Active("Reviews")" asp-area="" asp-controller="Reviews" asp-action="Index"><i class="bi bi-star me-1"></i>Driver reviews</a></li>
                         @if (isShopper)
                         {
                             <li class="nav-item"><a class="nav-link @Active("Orders")" asp-area="" asp-controller="Orders" asp-action="Index"><i class="bi bi-box-seam me-1"></i>My Orders</a></li>

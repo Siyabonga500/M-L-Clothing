@@ -1,0 +1,83 @@
+@model ReviewsPageViewModel
+@{
+    ViewData["Title"] = "Driver reviews";
+    var selected = Model.Selected;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <h1 class="page-title mb-0">Driver reviews</h1>
+        <div class="text-muted">What our customers say about the drivers who delivered their orders.</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="section-title">Our drivers</div>
+        <div class="d-grid gap-2">
+            <a asp-action="Index" asp-route-sort="@Model.Sort" class="surface p-3 d-block text-body driver-pick @(Model.DriverId == null ? "active" : "")">
+                <div class="fw-bold">All drivers</div>
+                @{ var totalReviews = Model.Drivers.Sum(d => d.Count); }
+                <div class="small text-muted">@totalReviews @(totalReviews == 1 ? "review" : "reviews")</div>
+            </a>
+            @foreach (var d in Model.Drivers)
+            {
+                <a asp-action="Index" asp-route-driverId="@d.Driver.Id" asp-route-sort="@Model.Sort"
+                   class="surface p-3 d-block text-body driver-pick @(d.Driver.Id == Model.DriverId ? "active" : "")">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-brand d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:44px;height:44px">
+                            @d.Driver.FirstName[..1]@(string.IsNullOrEmpty(d.Driver.Surname) ? "" : d.Driver.Surname[..1])
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">@d.Driver.FullName</div>
+                            @if (d.Count > 0)
+                            {
+                                <div class="small"><partial name="_Stars" model="d.Average" /> <strong>@d.Average.ToString("0.0")</strong> <span class="text-muted">(@d.Count)</span></div>
+                            }
+                            else
+                            {
+                                <div class="small text-muted">No reviews yet</div>
+                            }
+                            <div class="small text-muted">@d.Delivered @(d.Delivered == 1 ? "delivery" : "deliveries")</div>
+                        </div>
+                    </div>
+                </a>
+            }
+            @if (!Model.Drivers.Any())
+            {
+                <p class="text-muted small">No drivers yet.</p>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="section-title mb-0">
+                @(selected != null ? $"Reviews for {selected.Driver.FullName}" : "All reviews")
+                @if (selected?.Count > 0)
+                {
+                    <span class="ms-2 fs-6"><partial name="_Stars" model="selected.Average" /> @selected.Average.ToString("0.0") / 5</span>
+                }
+            </div>
+            <form method="get" class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="driverId" value="@Model.DriverId" />
+                <label for="sort" class="small text-muted text-nowrap">Sort by</label>
+                <select id="sort" name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @foreach (var (v, label) in new[] { ("newest", "Newest"), ("oldest", "Oldest"), ("highest", "Highest rating"), ("lowest", "Lowest rating"), ("helpful", "Most liked") })
+                    {
+                        <option value="@v" selected="@(Model.Sort == v)">@label</option>
+                    }
+                </select>
+            </form>
+        </div>
+        @if (!Model.Reviews.Any())
+        {
+            <div class="empty-state surface"><i class="bi bi-chat-square-heart"></i><p class="lead mt-3 mb-0">No reviews yet.</p></div>
+        }
+        <div class="d-grid gap-3">
+            @foreach (var item in Model.Reviews)
+            {
+                <partial name="_ReviewCard" model="item" />
+            }
+        </div>
+    </div>
+</div>

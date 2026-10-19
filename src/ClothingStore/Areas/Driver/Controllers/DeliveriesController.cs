@@ -31,6 +31,9 @@ public class DeliveriesController : Controller
             .OrderBy(o => o.Status == OrderStatus.Delivered)
             .ThenByDescending(o => o.DriverAssignedAt)
             .ToListAsync();
+        var mine = await _db.DriverReviews.Where(r => r.DriverId == DriverId).Select(r => r.Rating).ToListAsync();
+        ViewData["Rating"] = mine.Count > 0 ? mine.Average() : 0d;
+        ViewData["ReviewCount"] = mine.Count;
         return View(orders);
     }
 

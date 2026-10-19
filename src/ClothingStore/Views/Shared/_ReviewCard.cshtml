@@ -1,0 +1,53 @@
+@model ReviewItem
+@{
+    var r = Model.Review;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+<div class="surface p-3 review-card" id="review-@r.Id">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+        <div>
+            <partial name="_Stars" model="(double)r.Rating" />
+            <div class="small text-muted mt-1">
+                <strong class="text-body">@Model.CustomerName</strong> rated
+                <a asp-controller="Reviews" asp-action="Index" asp-route-driverId="@r.DriverId">@r.Driver?.FullName</a>
+                · @r.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+            </div>
+        </div>
+        @if (User.IsInRole(Roles.Admin))
+        {
+            <form asp-controller="Reviews" asp-action="Delete" asp-route-id="@r.Id" method="post" onsubmit="return confirm('Delete this review?');">
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button class="btn btn-sm btn-outline-danger" title="Delete review"><i class="bi bi-trash"></i></button>
+            </form>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(r.Comment))
+    {
+        <p class="mt-2 mb-0" style="white-space:pre-line">@r.Comment</p>
+    }
+    <div class="d-flex align-items-center gap-2 mt-3">
+        @if (Model.CanReact)
+        {
+            @foreach (var (like, icon, count, label) in new[] { (true, "bi-hand-thumbs-up", Model.Likes, "Like"), (false, "bi-hand-thumbs-down", Model.Dislikes, "Dislike") })
+            {
+                var on = Model.Mine == like;
+                <form asp-controller="Reviews" asp-action="React" asp-route-id="@r.Id" method="post">
+                    <input type="hidden" name="like" value="@(like ? "true" : "false")" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button class="btn btn-sm react-btn @(on ? (like ? "on-like" : "on-dislike") : "")" title="@label" aria-pressed="@(on ? "true" : "false")">
+                        <i class="bi @(on ? icon + "-fill" : icon)"></i> <span>@count</span>
+                    </button>
+                </form>
+            }
+        }
+        else
+        {
+            <span class="react-btn btn btn-sm disabled"><i class="bi bi-hand-thumbs-up"></i> @Model.Likes</span>
+            <span class="react-btn btn btn-sm disabled"><i class="bi bi-hand-thumbs-down"></i> @Model.Dislikes</span>
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl" class="small">Log in to react</a>
+            }
+        }
+    </div>
+</div>

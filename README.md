@@ -15,6 +15,10 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
 | --- | --- | --- |
 | ![Product](docs/screenshots/10-new-product.png) | ![Sizes](docs/screenshots/11-product-sizes.png) | ![Receipt](docs/screenshots/12-receipt.png) |
 
+| Driver reviews |
+| --- |
+| ![Reviews](docs/screenshots/13-reviews.png) |
+
 ## Who can do what
 
 **Customers**
@@ -33,6 +37,16 @@ An online clothing shop built with **ASP.NET Core MVC (.NET 10)**, **ASP.NET Ide
   PDF attached. On the order page they can **Download PDF** or **Email it to me again**.
 - **My Orders**: sort **newest or oldest purchase first** and filter **from date – to date**; progress timeline, the **QR code** (only the customer can see it), and **live driver tracking** with an
   estimated arrival time once the driver leaves.
+
+**Driver reviews** (menu: *Driver reviews*, public)
+- After a delivery is confirmed, the customer can rate the driver **1–5 stars** with a comment, once per order
+  (on the order page).
+- Everyone (even visitors who aren't logged in) can read all reviews and each driver's average rating; sort by
+  newest, oldest, highest, lowest or most liked; pick a driver to see only their reviews.
+- Logged-in users (customers, drivers, admin) react with **👍 like** or **👎 dislike**; clicking again removes it.
+  Drivers can't react to reviews about themselves. Customers are shown as first name + surname initial.
+- Admin can delete inappropriate reviews. Drivers see their own rating on *My Deliveries*; admin sees each
+  driver's rating on *Drivers*.
 
 **Admin** (`siya61512@gmail.com` / `Siyabonga@2`, created on first run)
 - Admin pages use a **top menu bar** (Dashboard, Orders, Products, Drivers, Users, Scan QR, Emails).

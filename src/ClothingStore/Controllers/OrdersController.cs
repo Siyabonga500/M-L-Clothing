@@ -40,7 +40,9 @@ public class OrdersController : Controller
         var order = await _db.Orders.Include(o => o.Items).Include(o => o.Driver)
             .Include(o => o.Events.OrderByDescending(e => e.CreatedAt))
             .FirstOrDefaultAsync(o => o.Id == id && o.UserId == UserId);
-        return order == null ? NotFound() : View(order);
+        if (order == null) return NotFound();
+        ViewData["Review"] = await _db.DriverReviews.FirstOrDefaultAsync(r => r.OrderId == id);
+        return View(order);
     }
 
     // Proof of payment as a PDF (download / save).

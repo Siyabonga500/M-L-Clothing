@@ -16,6 +16,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductSize> ProductSizes => Set<ProductSize>();
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
+    public DbSet<DriverReview> DriverReviews => Set<DriverReview>();
+    public DbSet<ReviewReaction> ReviewReactions => Set<ReviewReaction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -36,6 +38,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.SetNull);
         builder.Entity<Order>().HasIndex(o => o.StripeSessionId);
         builder.Entity<Order>().HasIndex(o => o.QrToken).IsUnique();
+
+        // Reviews: one per order. Deleting a customer or driver removes their reviews;
+        // reactions go with their review or user.
+        builder.Entity<DriverReview>().HasIndex(r => r.OrderId).IsUnique();
+        builder.Entity<DriverReview>()
+            .HasOne(r => r.Order).WithMany().HasForeignKey(r => r.OrderId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<DriverReview>()
+            .HasOne(r => r.Driver).WithMany().HasForeignKey(r => r.DriverId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<DriverReview>()
+            .HasOne(r => r.Customer).WithMany().HasForeignKey(r => r.CustomerId).OnDelete(DeleteBehavior.NoAction);
+        builder.Entity<ReviewReaction>().HasIndex(x => new { x.ReviewId, x.UserId }).IsUnique();
+        builder.Entity<ReviewReaction>()
+            .HasOne(x => x.Review).WithMany(r => r.Reactions).HasForeignKey(x => x.ReviewId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<ReviewReaction>()
+            .HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<ProductSize>()
             .HasOne(s => s.Product).WithMany(p => p.Sizes).HasForeignKey(s => s.ProductId)

@@ -256,3 +256,21 @@ a, .btn-link { text-decoration: none; }
 .admin-nav .nav-link { color: #fff; font-weight: 500; font-size: .95rem; padding: .4rem .75rem !important; border-radius: 6px; }
 .admin-nav .nav-link:hover { background: rgba(255,255,255,.12); color: #fff; }
 .admin-nav .nav-link.active { background: rgba(255,255,255,.18); color: #fff; }
+
+/* ----- Driver reviews ----- */
+.stars { color: var(--accent); white-space: nowrap; }
+.driver-pick { border-width: 2px; }
+.driver-pick:hover { border-color: var(--tint-2); }
+.driver-pick.active { border-color: var(--brand); background: var(--tint); }
+.react-btn { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 99px; padding: .25rem .75rem; }
+.react-btn:hover { border-color: var(--brand); color: var(--brand); }
+.react-btn.on-like { background: var(--tint); border-color: var(--brand); color: var(--brand); }
+.react-btn.on-dislike { background: #fbe4e1; border-color: var(--sale); color: var(--sale); }
+.react-btn.disabled { opacity: 1; }
+/* Star picker: radios in reverse order so CSS can light up the chosen star and the ones before it. */
+.star-input { display: inline-flex; flex-direction: row-reverse; gap: .2rem; }
+.star-input input { position: absolute; opacity: 0; width: 0; }
+.star-input label { font-size: 2rem; color: var(--border); cursor: pointer; line-height: 1; }
+.star-input label::before { content: "\2605"; }
+.star-input input:checked ~ label, .star-input label:hover, .star-input label:hover ~ label { color: var(--accent); }
+.star-input input:focus-visible + label { outline: 2px solid var(--brand); border-radius: 4px; }

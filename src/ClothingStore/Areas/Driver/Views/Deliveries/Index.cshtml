@@ -12,6 +12,13 @@
     <div class="col-6 col-md-3"><div class="stat highlight"><div class="icon"><i class="bi bi-truck"></i></div><div class="label">Active</div><div class="value">@active.Count</div></div></div>
     <div class="col-6 col-md-3"><div class="stat"><div class="icon"><i class="bi bi-signpost-2"></i></div><div class="label">On the road</div><div class="value">@active.Count(o => o.Status == OrderStatus.OutForDelivery)</div></div></div>
     <div class="col-6 col-md-3"><div class="stat"><div class="icon"><i class="bi bi-patch-check"></i></div><div class="label">Delivered</div><div class="value">@done.Count</div></div></div>
+    <div class="col-6 col-md-3">
+        <a asp-area="" asp-controller="Reviews" asp-action="Index" asp-route-driverId="@UserManager.GetUserId(User)" class="stat d-block text-body">
+            <div class="icon"><i class="bi bi-star"></i></div>
+            <div class="label">My rating (@ViewData["ReviewCount"] reviews)</div>
+            <div class="value">@(((int)ViewData["ReviewCount"]!) > 0 ? ((double)ViewData["Rating"]!).ToString("0.0") : "–")</div>
+        </a>
+    </div>
 </div>
 
 <div class="section-title">Assigned to me</div>

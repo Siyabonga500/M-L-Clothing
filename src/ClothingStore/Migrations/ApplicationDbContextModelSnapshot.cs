@@ -165,6 +165,45 @@ namespace ClothingStore.Migrations
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.DriverReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("DriverReviews");
+                });
+
             modelBuilder.Entity("ClothingStore.Models.EmailLog", b =>
                 {
                     b.Property<int>("Id")
@@ -465,6 +504,35 @@ namespace ClothingStore.Migrations
                     b.ToTable("ProductSizes");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.ReviewReaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsLike")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ReviewId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ReviewReactions");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -612,6 +680,33 @@ namespace ClothingStore.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.DriverReview", b =>
+                {
+                    b.HasOne("ClothingStore.Models.ApplicationUser", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ClothingStore.Models.ApplicationUser", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClothingStore.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("ClothingStore.Models.Order", b =>
                 {
                     b.HasOne("ClothingStore.Models.ApplicationUser", "Driver")
@@ -682,6 +777,25 @@ namespace ClothingStore.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("ClothingStore.Models.ReviewReaction", b =>
+                {
+                    b.HasOne("ClothingStore.Models.DriverReview", "Review")
+                        .WithMany("Reactions")
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClothingStore.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Review");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -731,6 +845,11 @@ namespace ClothingStore.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ClothingStore.Models.DriverReview", b =>
+                {
+                    b.Navigation("Reactions");
                 });
 
             modelBuilder.Entity("ClothingStore.Models.Order", b =>

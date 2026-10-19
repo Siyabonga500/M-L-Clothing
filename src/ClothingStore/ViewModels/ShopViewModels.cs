@@ -85,6 +85,8 @@ public class AdminUserViewModel
     public int OrderCount { get; set; }
     public bool IsDriver { get; set; }
     public int ActiveDeliveries { get; set; }
+    public double Rating { get; set; }
+    public int ReviewCount { get; set; }
 }
 
 /// <summary>Settings for the shared map address picker partial.</summary>
@@ -101,4 +103,36 @@ public class MapPickerModel
     public string? PostalId { get; set; }
     /// <summary>Show the store and a live distance/time estimate (checkout).</summary>
     public bool ShowEta { get; set; }
+}
+
+public class DriverRatingSummary
+{
+    public ApplicationUser Driver { get; set; } = null!;
+    public double Average { get; set; }
+    public int Count { get; set; }
+    public int Delivered { get; set; }
+}
+
+public class ReviewItem
+{
+    public DriverReview Review { get; set; } = null!;
+    public int Likes { get; set; }
+    public int Dislikes { get; set; }
+    /// <summary>The viewer's own reaction: true = like, false = dislike, null = none.</summary>
+    public bool? Mine { get; set; }
+    public bool CanReact { get; set; }
+
+    /// <summary>"Thandi M." – first name and surname initial, so customers aren't fully named in public.</summary>
+    public string CustomerName =>
+        Review.Customer == null ? "Customer"
+        : $"{Review.Customer.FirstName} {(string.IsNullOrEmpty(Review.Customer.Surname) ? "" : Review.Customer.Surname[..1] + ".")}".Trim();
+}
+
+public class ReviewsPageViewModel
+{
+    public List<DriverRatingSummary> Drivers { get; set; } = new();
+    public List<ReviewItem> Reviews { get; set; } = new();
+    public string? DriverId { get; set; }
+    public string Sort { get; set; } = "newest";
+    public DriverRatingSummary? Selected => Drivers.FirstOrDefault(d => d.Driver.Id == DriverId);
 }
