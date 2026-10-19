@@ -41,9 +41,18 @@ public class RegisterViewModel
     [Compare(nameof(Password), ErrorMessage = "The passwords do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms to register.")]
+    [MustBeTrue(ErrorMessage = "You must accept the terms to register.")]
     [Display(Name = "I accept the terms and conditions")]
     public bool AcceptTerms { get; set; }
+}
+
+/// <summary>
+/// Requires a checkbox to be ticked. Checked on the server only: the built-in [Range]
+/// trick breaks jQuery's client-side validation for checkboxes.
+/// </summary>
+public class MustBeTrueAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value) => value is true;
 }
 
 public class LoginViewModel
